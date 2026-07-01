@@ -5,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bill Management - Google Sheets</title>
     <style>
-        /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f4f8; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
         .container { max-width: 1200px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        /* ===== HEADER ===== */
         h1 { color: #1a202c; margin-bottom: 8px; }
         .subtitle { color: #718096; margin-bottom: 30px; }
         .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
         
-        /* ===== LOGIN OVERLAY ===== */
         .login-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; }
         .login-overlay.active { display: flex; }
         .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -29,7 +26,6 @@
         .login-error { color: #fc8181; font-size: 14px; margin-top: 8px; display: none; }
         .login-error.show { display: block; }
         
-        /* ===== HEADER ===== */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
         .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
@@ -40,7 +36,6 @@
         .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .btn-admin-login:hover { background: #3182ce; }
         
-        /* ===== FORM ===== */
         .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
         .form-section.disabled { opacity: 0.5; pointer-events: none; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -53,7 +48,6 @@
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
         .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
         
-        /* ===== BUTTONS ===== */
         .btn { padding: 12px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #4299e1; color: white; }
         .btn-primary:hover { background: #3182ce; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(66,153,225,0.4); }
@@ -65,13 +59,11 @@
         .preview-btn { padding: 4px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .preview-btn:hover { background: #3182ce; }
         
-        /* ===== STATS ===== */
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: #f7fafc; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #4299e1; }
         .stat-card .label { font-size: 13px; color: #718096; }
         .stat-card .value { font-size: 24px; font-weight: 700; color: #1a202c; }
         
-        /* ===== TABLE ===== */
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { background: #edf2f7; color: #2d3748; padding: 14px 16px; text-align: left; font-weight: 600; }
@@ -80,11 +72,9 @@
         .empty { text-align: center; padding: 40px 20px; color: #a0aec0; font-size: 18px; }
         .actions { display: flex; gap: 8px; flex-wrap: wrap; }
         
-        /* ===== FILTER ===== */
         .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
         .filter-bar input, .filter-bar select { padding: 8px 14px; border-radius: 10px; border: 1px solid #cbd5e0; font-size: 14px; }
         
-        /* ===== MODAL ===== */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal { background: white; padding: 24px; border-radius: 16px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; }
@@ -93,7 +83,6 @@
         .modal .close-btn { float: right; background: none; border: none; font-size: 28px; cursor: pointer; color: #718096; }
         .modal .close-btn:hover { color: #1a202c; }
         
-        /* ===== OTHER ===== */
         .restricted-msg { color: #fc8181; font-size: 13px; margin-top: 4px; display: none; }
         .restricted-msg.show { display: block; }
         .mode-toggle { display: flex; align-items: center; gap: 8px; background: #f7fafc; padding: 4px; border-radius: 10px; border: 1px solid #e2e8f0; }
@@ -105,7 +94,6 @@
         .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
         .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
         
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
             .container { padding: 16px; }
@@ -120,7 +108,7 @@
 </head>
 <body>
 
-    <!-- ===== LOGIN OVERLAY ===== -->
+    <!-- LOGIN OVERLAY -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h2>🔐 Admin Login</h2>
@@ -140,9 +128,8 @@
         </div>
     </div>
 
-    <!-- ===== MAIN APP ===== -->
+    <!-- MAIN APP -->
     <div class="container">
-        <!-- HEADER -->
         <div class="header">
             <div>
                 <h1>📋 Bill Management <span class="online-badge">☁️ Google Sheets</span></h1>
@@ -156,12 +143,10 @@
             </div>
         </div>
 
-        <!-- SYNC STATUS -->
         <div class="sync-status synced" id="syncStatus">
             <span>✅</span> <span id="syncText">Connected to Google Sheets</span>
         </div>
 
-        <!-- MODE TOGGLE -->
         <div style="margin-bottom: 20px;">
             <div class="mode-toggle">
                 <button class="active" id="userModeBtn">👤 User Mode (View Only)</button>
@@ -169,7 +154,6 @@
             </div>
         </div>
 
-        <!-- FORM -->
         <div class="form-section disabled" id="formSection">
             <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
             <div class="restricted-msg show" id="restrictedMsg">⛔ You are in view-only mode. Login as Admin to add or delete bills.</div>
@@ -212,7 +196,6 @@
             </form>
         </div>
 
-        <!-- STATS -->
         <div class="stats" id="statsContainer">
             <div class="stat-card"><div class="label">Total Bills</div><div class="value" id="totalCount">0</div></div>
             <div class="stat-card"><div class="label">Total Amount</div><div class="value" id="totalAmount">0.00 BAM</div></div>
@@ -220,7 +203,6 @@
             <div class="stat-card"><div class="label">Variable</div><div class="value" id="variableCount">0</div></div>
         </div>
 
-        <!-- FILTER -->
         <div class="filter-bar">
             <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
             <select id="filterCategory">
@@ -238,7 +220,6 @@
             <button class="btn btn-sm btn-primary" id="clearFilters">🔄 Clear Filters</button>
         </div>
 
-        <!-- TABLE -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -258,7 +239,7 @@
         </div>
     </div>
 
-    <!-- ===== MODAL ===== -->
+    <!-- MODAL -->
     <div class="modal-overlay" id="previewModal">
         <div class="modal">
             <button class="close-btn" id="modalClose">&times;</button>
@@ -274,7 +255,7 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXCqmlJUsgnPwmCueuBIFXAGbM9UywDCD1TkJWoAEWRhennLyedVS584Sokggupk4b/exec';
 
         // ============================================
-        // AUTHENTICATION
+        // AUTHENTICATION - KORISTI localStorage ZA TRAJNU SESIJU
         // ============================================
         const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
         let isAdminMode = false;
@@ -282,7 +263,9 @@
         function loginAdmin(username, password) {
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
                 isAdminMode = true;
-                sessionStorage.setItem('adminMode', 'true');
+                // Čuvamo sesiju u localStorage (trajno)
+                localStorage.setItem('adminMode', 'true');
+                localStorage.setItem('adminLoginTime', new Date().toISOString());
                 return true;
             }
             return false;
@@ -290,13 +273,15 @@
 
         function logoutAdmin() {
             isAdminMode = false;
-            sessionStorage.removeItem('adminMode');
+            localStorage.removeItem('adminMode');
+            localStorage.removeItem('adminLoginTime');
         }
 
         function checkAdminSession() {
-            const stored = sessionStorage.getItem('adminMode');
+            const stored = localStorage.getItem('adminMode');
             if (stored === 'true') { 
                 isAdminMode = true; 
+                console.log('Admin session restored from localStorage');
                 return true; 
             }
             return false;
@@ -531,32 +516,22 @@
             const title = document.getElementById('modalTitle');
             title.textContent = `Attachment: ${name || 'Bill'}`;
 
-            // Check if it's a Google Drive link
             if (url.includes('drive.google.com')) {
-                // For images - show directly
-                if (url.includes('?') && !url.includes('uc?id=')) {
-                    // Extract file ID
-                    const match = url.match(/[-\w]{25,}/);
-                    if (match) {
-                        const fileId = match[0];
-                        // Check if it's an image by extension or use Google's viewer
-                        content.innerHTML = `
-                            <iframe src="https://drive.google.com/file/d/${fileId}/preview" style="width:100%; height:500px;" allowfullscreen></iframe>
-                            <p style="margin-top:12px; font-size:13px; color:#718096;">
-                                <a href="${url}" target="_blank" style="color:#4299e1;">📎 Open in Google Drive</a>
-                            </p>
-                        `;
-                    } else {
-                        content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
-                    }
+                const match = url.match(/[-\w]{25,}/);
+                if (match) {
+                    const fileId = match[0];
+                    content.innerHTML = `
+                        <iframe src="https://drive.google.com/file/d/${fileId}/preview" style="width:100%; height:500px;" allowfullscreen></iframe>
+                        <p style="margin-top:12px; font-size:13px; color:#718096;">
+                            <a href="${url}" target="_blank" style="color:#4299e1;">📎 Open in Google Drive</a>
+                        </p>
+                    `;
                 } else {
                     content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
                 }
             } else if (url.startsWith('data:image/')) {
-                // Base64 image
                 content.innerHTML = `<img src="${url}" alt="Attachment" style="max-width:100%;" />`;
             } else if (url.startsWith('data:application/pdf')) {
-                // Base64 PDF
                 content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
             } else {
                 content.innerHTML = `<p>Unable to preview this file. <a href="${url}" target="_blank" style="color:#4299e1;">Open in new tab</a></p>`;
@@ -569,7 +544,7 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // ---- Admin Login ----
+            // Admin Login
             document.getElementById('adminLoginBtn').addEventListener('click', function() {
                 document.getElementById('loginOverlay').classList.add('active');
                 document.getElementById('username').value = '';
@@ -587,6 +562,7 @@
                     document.getElementById('loginError').classList.remove('show');
                     render();
                     updateUI();
+                    console.log('Admin logged in successfully!');
                 } else {
                     document.getElementById('loginError').classList.add('show');
                     setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
@@ -601,14 +577,15 @@
                 }
             });
 
-            // ---- Logout ----
+            // Logout
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 logoutAdmin();
                 render();
                 updateUI();
+                console.log('Admin logged out');
             });
 
-            // ---- Form Submit ----
+            // Form Submit
             document.getElementById('billForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 if (!isAdmin()) {
@@ -645,7 +622,7 @@
                 }
             });
 
-            // ---- Toggle file input ----
+            // Toggle file input
             document.getElementById('isFixed').addEventListener('change', function() {
                 const fileGroup = document.getElementById('fileGroup');
                 if (this.checked) {
@@ -656,7 +633,7 @@
                 }
             });
 
-            // ---- Filters ----
+            // Filters
             document.getElementById('filterSearch').addEventListener('input', render);
             document.getElementById('filterCategory').addEventListener('change', render);
             document.getElementById('filterType').addEventListener('change', render);
@@ -668,7 +645,7 @@
                 render();
             });
 
-            // ---- Modal ----
+            // Modal
             document.getElementById('modalClose').addEventListener('click', function() {
                 document.getElementById('previewModal').classList.remove('active');
             });
@@ -679,7 +656,7 @@
                 }
             });
 
-            // ---- Mode Toggle (visual only) ----
+            // Mode Toggle
             document.getElementById('userModeBtn').addEventListener('click', function() {
                 if (isAdmin()) {
                     if (confirm('Switch to User mode? You will lose admin access until you login again.')) {
@@ -697,13 +674,16 @@
             });
 
             // ---- INIT ----
-            // Check if admin session exists
+            // Check if admin session exists in localStorage
             if (checkAdminSession()) {
-                console.log('Admin session restored');
+                console.log('Admin session restored from localStorage');
+                // Auto-login admin
+                updateUI();
             }
 
             // Load data from Google Sheets
             loadFromGoogleSheets();
         });
     </script>
-</body
+</body>
+</html>
