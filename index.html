@@ -13,19 +13,74 @@
         .subtitle { color: #718096; margin-bottom: 30px; }
         .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
         
-        .login-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; }
+        /* ===== LOGIN OVERLAY ===== */
+        .login-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.7); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
         .login-overlay.active { display: flex; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .login-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 400px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
         .login-box h2 { margin-bottom: 8px; color: #1a202c; }
         .login-box p { color: #718096; margin-bottom: 24px; font-size: 14px; }
         .login-box .form-group { margin-bottom: 16px; }
         .login-box label { display: block; font-weight: 600; font-size: 14px; color: #2d3748; margin-bottom: 4px; }
-        .login-box input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 10px; font-size: 15px; }
-        .login-box input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.2); }
-        .login-box .btn { width: 100%; padding: 12px; margin-top: 8px; }
-        .login-error { color: #fc8181; font-size: 14px; margin-top: 8px; display: none; }
+        .login-box input { 
+            width: 100%; 
+            padding: 12px 14px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 10px; 
+            font-size: 15px;
+            transition: 0.2s;
+        }
+        .login-box input:focus { 
+            outline: none; 
+            border-color: #4299e1; 
+            box-shadow: 0 0 0 3px rgba(66,153,225,0.2); 
+        }
+        .login-box .btn { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 8px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .login-box .btn:hover { background: #3182ce; }
+        .login-error { 
+            color: #fc8181; 
+            font-size: 14px; 
+            margin-top: 8px; 
+            display: none; 
+            background: #fff5f5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #fed7d7;
+        }
         .login-error.show { display: block; }
         
+        /* ===== HEADER ===== */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
         .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
@@ -108,7 +163,7 @@
 </head>
 <body>
 
-    <!-- LOGIN OVERLAY -->
+    <!-- ===== LOGIN OVERLAY ===== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h2>🔐 Admin Login</h2>
@@ -116,19 +171,19 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter username" required />
+                    <input type="text" id="username" placeholder="Enter username" required autofocus />
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" placeholder="Enter password" required />
                 </div>
-                <div class="login-error" id="loginError">Invalid username or password. Please try again.</div>
-                <button type="submit" class="btn btn-primary">Login as Admin</button>
+                <div class="login-error" id="loginError">❌ Invalid username or password. Please try again.</div>
+                <button type="submit" class="btn">🔑 Login as Admin</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN APP -->
+    <!-- ===== MAIN APP ===== -->
     <div class="container">
         <div class="header">
             <div>
@@ -239,7 +294,7 @@
         </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- ===== MODAL ===== -->
     <div class="modal-overlay" id="previewModal">
         <div class="modal">
             <button class="close-btn" id="modalClose">&times;</button>
@@ -255,7 +310,7 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXCqmlJUsgnPwmCueuBIFXAGbM9UywDCD1TkJWoAEWRhennLyedVS584Sokggupk4b/exec';
 
         // ============================================
-        // AUTHENTICATION - KORISTI localStorage ZA TRAJNU SESIJU
+        // AUTHENTICATION
         // ============================================
         const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
         let isAdminMode = false;
@@ -263,7 +318,6 @@
         function loginAdmin(username, password) {
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
                 isAdminMode = true;
-                // Čuvamo sesiju u localStorage (trajno)
                 localStorage.setItem('adminMode', 'true');
                 localStorage.setItem('adminLoginTime', new Date().toISOString());
                 return true;
@@ -281,7 +335,6 @@
             const stored = localStorage.getItem('adminMode');
             if (stored === 'true') { 
                 isAdminMode = true; 
-                console.log('Admin session restored from localStorage');
                 return true; 
             }
             return false;
@@ -544,40 +597,63 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Admin Login
-            document.getElementById('adminLoginBtn').addEventListener('click', function() {
+            console.log('App loaded - checking admin session...');
+            
+            // ---- ADMIN LOGIN BUTTON ----
+            document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Admin login button clicked - showing overlay');
                 document.getElementById('loginOverlay').classList.add('active');
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('loginError').classList.remove('show');
+                // Focus on username field
+                setTimeout(() => document.getElementById('username').focus(), 100);
             });
 
+            // ---- LOGIN FORM SUBMIT ----
             document.getElementById('loginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
+                console.log('Login form submitted');
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
                 
+                console.log('Username entered:', username);
+                
                 if (loginAdmin(username, password)) {
+                    console.log('Login successful!');
                     document.getElementById('loginOverlay').classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
                     render();
                     updateUI();
-                    console.log('Admin logged in successfully!');
                 } else {
+                    console.log('Login failed - wrong credentials');
                     document.getElementById('loginError').classList.add('show');
                     setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
                 }
             });
 
-            // Close login on outside click
+            // ---- CLOSE LOGIN ON OUTSIDE CLICK ----
             document.getElementById('loginOverlay').addEventListener('click', function(e) {
                 if (e.target === this) {
+                    console.log('Closing login overlay');
                     this.classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
                 }
             });
 
-            // Logout
+            // ---- CLOSE LOGIN ON ESCAPE KEY ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const overlay = document.getElementById('loginOverlay');
+                    if (overlay.classList.contains('active')) {
+                        overlay.classList.remove('active');
+                        document.getElementById('loginError').classList.remove('show');
+                    }
+                }
+            });
+
+            // ---- LOGOUT ----
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 logoutAdmin();
                 render();
@@ -585,7 +661,7 @@
                 console.log('Admin logged out');
             });
 
-            // Form Submit
+            // ---- FORM SUBMIT ----
             document.getElementById('billForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 if (!isAdmin()) {
@@ -622,7 +698,7 @@
                 }
             });
 
-            // Toggle file input
+            // ---- TOGGLE FILE INPUT ----
             document.getElementById('isFixed').addEventListener('change', function() {
                 const fileGroup = document.getElementById('fileGroup');
                 if (this.checked) {
@@ -633,7 +709,7 @@
                 }
             });
 
-            // Filters
+            // ---- FILTERS ----
             document.getElementById('filterSearch').addEventListener('input', render);
             document.getElementById('filterCategory').addEventListener('change', render);
             document.getElementById('filterType').addEventListener('change', render);
@@ -645,7 +721,7 @@
                 render();
             });
 
-            // Modal
+            // ---- MODAL ----
             document.getElementById('modalClose').addEventListener('click', function() {
                 document.getElementById('previewModal').classList.remove('active');
             });
@@ -656,7 +732,7 @@
                 }
             });
 
-            // Mode Toggle
+            // ---- MODE TOGGLE ----
             document.getElementById('userModeBtn').addEventListener('click', function() {
                 if (isAdmin()) {
                     if (confirm('Switch to User mode? You will lose admin access until you login again.')) {
@@ -674,10 +750,9 @@
             });
 
             // ---- INIT ----
-            // Check if admin session exists in localStorage
+            // Check if admin session exists
             if (checkAdminSession()) {
                 console.log('Admin session restored from localStorage');
-                // Auto-login admin
                 updateUI();
             }
 
