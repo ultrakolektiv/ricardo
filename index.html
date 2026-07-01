@@ -487,11 +487,6 @@
             background: #edf2f7;
         }
 
-        /* No hint shown */
-        .no-hint {
-            display: none !important;
-        }
-
         @media (max-width: 700px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -578,19 +573,19 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="billName">Bill Name *</label>
-                        <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." disabled />
+                        <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." />
                     </div>
                     <div class="form-group">
                         <label for="billAmount">Amount (BAM) *</label>
-                        <input type="number" id="billAmount" placeholder="0.00" step="0.01" disabled />
+                        <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
                     </div>
                     <div class="form-group">
                         <label for="billDate">Date *</label>
-                        <input type="text" id="billDate" placeholder="e.g. 15.06.2026 or 2026-06-15" disabled />
+                        <input type="text" id="billDate" placeholder="e.g. 15.06.2026 or 2026-06-15" />
                     </div>
                     <div class="form-group">
                         <label for="billCategory">Category</label>
-                        <select id="billCategory" disabled>
+                        <select id="billCategory">
                             <option value="Utilities">Utilities</option>
                             <option value="Internet/Phone">Internet/Phone</option>
                             <option value="Subscriptions">Subscriptions</option>
@@ -599,17 +594,17 @@
                     </div>
                     <div class="form-group full-width">
                         <div class="checkbox-group">
-                            <input type="checkbox" id="isFixed" disabled />
+                            <input type="checkbox" id="isFixed" />
                             <label for="isFixed" style="font-weight: 500;">Fixed bill (no attachment required)</label>
                         </div>
                     </div>
                     <div class="form-group full-width" id="fileGroup">
                         <label for="billFile">Attach image or PDF (optional)</label>
-                        <input type="file" id="billFile" accept=".pdf,image/*" disabled />
+                        <input type="file" id="billFile" accept=".pdf,image/*" />
                         <small style="color:#718096;">Max file size: 5MB</small>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" id="saveBtn" disabled>💾 Save Bill</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Bill</button>
             </form>
         </div>
 
@@ -709,8 +704,14 @@
         function loadFromStorage() {
             const stored = localStorage.getItem('bills');
             if (stored) {
-                try { bills = JSON.parse(stored); } catch (e) { bills = []; }
+                try { 
+                    bills = JSON.parse(stored); 
+                    console.log('Loaded bills from storage:', bills.length);
+                } catch (e) { 
+                    bills = []; 
+                }
             } else {
+                // Seed with demo data only if no data exists
                 bills = [{
                     id: Date.now() + 1,
                     name: 'Electricity',
@@ -741,7 +742,12 @@
         }
 
         function saveToStorage() {
-            localStorage.setItem('bills', JSON.stringify(bills));
+            try {
+                localStorage.setItem('bills', JSON.stringify(bills));
+                console.log('Saved bills to storage:', bills.length);
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+            }
         }
 
         function generateId() {
@@ -750,6 +756,8 @@
 
         // ---------- RENDER ----------
         function render() {
+            console.log('Rendering bills:', bills.length);
+            
             const search = document.getElementById('filterSearch').value.toLowerCase();
             const category = document.getElementById('filterCategory').value;
             const type = document.getElementById('filterType').value;
@@ -794,6 +802,7 @@
                 }).join('');
             }
 
+            // Attach event listeners for preview
             document.querySelectorAll('.attachment-link').forEach(el => {
                 el.addEventListener('click', function(e) {
                     const id = parseFloat(this.dataset.id);
@@ -804,6 +813,7 @@
                 });
             });
 
+            // Attach event listeners for delete
             document.querySelectorAll('.delete-btn').forEach(el => {
                 el.addEventListener('click', function() {
                     if (!isAdmin()) return;
@@ -1000,9 +1010,7 @@
         // ---------- ADMIN LOGIN ----------
         document.getElementById('adminLoginBtn').addEventListener('click', function() {
             document.getElementById('loginOverlay').classList.add('active');
-            // Clear any previous error
             document.getElementById('loginError').classList.remove('show');
-            // Clear fields
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
         });
@@ -1067,13 +1075,17 @@
         });
 
         // ---------- INIT ----------
+        // Check if admin is already logged in
         if (checkAdminSession()) {
-            // Admin is already logged in
+            console.log('Admin session restored');
         }
 
+        // Load data from storage
         loadFromStorage();
         render();
         updateUI();
+
+        console.log('App initialized. Total bills:', bills.length);
     </script>
 </body>
 </html>
