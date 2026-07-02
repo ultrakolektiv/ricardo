@@ -13,7 +13,7 @@
         .subtitle { color: #718096; margin-bottom: 30px; }
         .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
         
-        /* ===== LOGIN OVERLAY ===== */
+        /* ===== LOGIN OVERLAY - POPRAVLJENO ===== */
         .login-overlay { 
             display: none !important; 
             position: fixed; 
@@ -82,7 +82,7 @@
         }
         .login-error.show { display: block; }
         
-        /* ===== HEADER ===== */
+        /* ===== OSTALI STILOVI (SKRAĆENO) ===== */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
         .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
@@ -153,13 +153,7 @@
         .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
         .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
         
-        .toolbar-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-            align-items: center;
-        }
+        .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
         
         .toast {
             position: fixed;
@@ -196,7 +190,7 @@
 </head>
 <body>
 
-    <!-- ===== TOAST MESSAGE ===== -->
+    <!-- ===== TOAST ===== -->
     <div class="toast" id="toast">✅ Bill saved successfully!</div>
 
     <!-- ===== LOGIN OVERLAY ===== -->
@@ -245,7 +239,6 @@
             </div>
         </div>
 
-        <!-- TOOLBAR - Admin Actions -->
         <div class="toolbar-actions" id="adminToolbar" style="display:none;">
             <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
             <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
@@ -347,7 +340,7 @@
 
     <script>
         // ============================================
-        // 🔑 ZAMIJENI OVO SA SVOJIM GOOGLE SCRIPT URL-OM!
+        // 🔑 VAŠ GOOGLE SCRIPT URL
         // ============================================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXCqmlJUsgnPwmCueuBIFXAGbM9UywDCD1TkJWoAEWRhennLyedVS584Sokggupk4b/exec';
 
@@ -361,7 +354,6 @@
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
                 isAdminMode = true;
                 localStorage.setItem('adminMode', 'true');
-                localStorage.setItem('adminLoginTime', new Date().toISOString());
                 return true;
             }
             return false;
@@ -370,7 +362,6 @@
         function logoutAdmin() {
             isAdminMode = false;
             localStorage.removeItem('adminMode');
-            localStorage.removeItem('adminLoginTime');
         }
 
         function checkAdminSession() {
@@ -382,20 +373,16 @@
             return false;
         }
 
-        function isAdmin() { 
-            return isAdminMode; 
-        }
+        function isAdmin() { return isAdminMode; }
 
         // ============================================
-        // TOAST NOTIFICATION
+        // TOAST
         // ============================================
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         // ============================================
@@ -411,19 +398,19 @@
                 
                 if (result.success) {
                     bills = result.data.filter(b => {
-                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
-                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
+                        const hasValidId = b.id && b.id !== '' && b.id !== 'null';
+                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null';
                         const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
                         return hasValidId && hasValidName && hasValidAmount;
                     });
-                    console.log('Loaded:', bills.length, 'valid bills');
+                    console.log('Loaded:', bills.length, 'bills');
                     setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
                 } else {
                     throw new Error(result.error || 'Failed to load');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                setSyncStatus('error', '❌ Error connecting to Google Sheets');
+                setSyncStatus('error', '❌ Error: ' + error.message);
                 bills = [];
             }
             render();
@@ -431,7 +418,7 @@
         }
 
         async function saveToGoogleSheets(bill) {
-            setSyncStatus('syncing', 'Saving to Google Sheets...');
+            setSyncStatus('syncing', 'Saving...');
             try {
                 await fetch(GOOGLE_SCRIPT_URL + '?method=POST', {
                     method: 'POST',
@@ -439,55 +426,48 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bill)
                 });
-                setSyncStatus('synced', '✅ Bill saved to Google Sheets');
+                setSyncStatus('synced', '✅ Saved!');
                 return true;
             } catch (error) {
                 console.error('Save error:', error);
-                setSyncStatus('error', '❌ Error saving to Google Sheets');
+                setSyncStatus('error', '❌ Save failed');
                 return false;
             }
         }
 
         async function deleteFromGoogleSheets(id) {
-            setSyncStatus('syncing', 'Deleting from Google Sheets...');
+            setSyncStatus('syncing', 'Deleting...');
             try {
                 await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
                     method: 'DELETE',
                     mode: 'no-cors'
                 });
-                setSyncStatus('synced', '✅ Bill deleted from Google Sheets');
+                setSyncStatus('synced', '✅ Deleted!');
                 return true;
             } catch (error) {
                 console.error('Delete error:', error);
-                setSyncStatus('error', '❌ Error deleting from Google Sheets');
+                setSyncStatus('error', '❌ Delete failed');
                 return false;
             }
         }
 
         async function deleteAllBills() {
             if (!isAdmin()) return;
-            if (!confirm('⚠️ Are you sure you want to delete ALL bills? This cannot be undone!')) return;
-            if (!confirm('⚠️ REALLY? All ' + bills.length + ' bills will be permanently deleted!')) return;
+            if (!confirm('⚠️ Delete ALL bills?')) return;
+            if (!confirm('REALLY? ' + bills.length + ' bills will be deleted!')) return;
 
-            setSyncStatus('syncing', 'Deleting all bills...');
-            let deleted = 0;
-            let failed = 0;
-
+            setSyncStatus('syncing', 'Deleting all...');
             for (const bill of bills) {
                 try {
                     await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + bill.id, {
                         method: 'DELETE',
                         mode: 'no-cors'
                     });
-                    deleted++;
                 } catch (error) {
-                    console.error('Failed to delete:', bill.id, error);
-                    failed++;
+                    console.error('Failed to delete:', bill.id);
                 }
             }
-
-            setSyncStatus('synced', '✅ Deleted ' + deleted + ' bills' + (failed > 0 ? ' (' + failed + ' failed)' : ''));
-            showToast('🗑️ Deleted ' + deleted + ' bills!');
+            showToast('🗑️ All bills deleted!');
             await loadFromGoogleSheets();
         }
 
@@ -499,7 +479,7 @@
         }
 
         // ============================================
-        // CRUD OPERATIONS
+        // CRUD
         // ============================================
         function generateId() {
             return Date.now() + Math.random() * 1000;
@@ -519,8 +499,7 @@
             
             await saveToGoogleSheets(bill);
             await loadFromGoogleSheets();
-            
-            showToast('✅ Bill "' + name + '" saved successfully!');
+            showToast('✅ Bill "' + name + '" saved!');
             
             document.getElementById('billForm').reset();
             document.getElementById('isFixed').checked = false;
@@ -531,8 +510,7 @@
 
         async function deleteBill(id) {
             if (!isAdmin()) return;
-            if (!confirm('Are you sure you want to delete this bill?')) return;
-
+            if (!confirm('Delete this bill?')) return;
             await deleteFromGoogleSheets(id);
             await loadFromGoogleSheets();
             showToast('🗑️ Bill deleted!');
@@ -562,14 +540,14 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="empty">No bills found. Add your first bill!</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
-                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
+                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null';
                     const attachmentHtml = hasAttachment ?
                         `<button class="preview-btn" data-url="${b.attachment}" data-name="${b.name}">📎 Preview</button>` :
-                        '<span style="color:#a0aec0; font-size:13px;">None</span>';
+                        '<span style="color:#a0aec0;">None</span>';
                     
                     const deleteBtn = isAdmin() ?
                         `<button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️</button>` :
-                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">🗑️</button>`;
+                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4;">🗑️</button>`;
                     
                     return `
                         <tr>
@@ -586,16 +564,13 @@
 
             document.querySelectorAll('.preview-btn').forEach(el => {
                 el.onclick = function() {
-                    const url = this.dataset.url;
-                    const name = this.dataset.name;
-                    showPreview(url, name);
+                    showPreview(this.dataset.url, this.dataset.name);
                 };
             });
 
             document.querySelectorAll('.delete-btn').forEach(el => {
                 el.onclick = function() {
-                    const id = parseFloat(this.dataset.id);
-                    deleteBill(id);
+                    deleteBill(parseFloat(this.dataset.id));
                 };
             });
 
@@ -621,7 +596,7 @@
 
         function updateUI() {
             const isAdminUser = isAdmin();
-            document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin (Full Access)' : '👤 User (View Only)';
+            document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
             document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
@@ -654,28 +629,24 @@
         function showPreview(url, name) {
             const modal = document.getElementById('previewModal');
             const content = document.getElementById('modalContent');
-            const title = document.getElementById('modalTitle');
-            title.textContent = `Attachment: ${name || 'Bill'}`;
+            document.getElementById('modalTitle').textContent = `Attachment: ${name || 'Bill'}`;
 
             if (url.includes('drive.google.com')) {
                 const match = url.match(/[-\w]{25,}/);
                 if (match) {
-                    const fileId = match[0];
                     content.innerHTML = `
-                        <iframe src="https://drive.google.com/file/d/${fileId}/preview" style="width:100%; height:500px;" allowfullscreen></iframe>
-                        <p style="margin-top:12px; font-size:13px; color:#718096;">
-                            <a href="${url}" target="_blank" style="color:#4299e1;">📎 Open in Google Drive</a>
-                        </p>
+                        <iframe src="https://drive.google.com/file/d/${match[0]}/preview" style="width:100%; height:500px;" allowfullscreen></iframe>
+                        <p><a href="${url}" target="_blank" style="color:#4299e1;">📎 Open in Google Drive</a></p>
                     `;
                 } else {
                     content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
                 }
             } else if (url.startsWith('data:image/')) {
-                content.innerHTML = `<img src="${url}" alt="Attachment" style="max-width:100%;" />`;
+                content.innerHTML = `<img src="${url}" style="max-width:100%;" />`;
             } else if (url.startsWith('data:application/pdf')) {
                 content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
             } else {
-                content.innerHTML = `<p>Unable to preview this file. <a href="${url}" target="_blank" style="color:#4299e1;">Open in new tab</a></p>`;
+                content.innerHTML = `<p><a href="${url}" target="_blank" style="color:#4299e1;">Open file</a></p>`;
             }
 
             modal.classList.add('active');
@@ -687,58 +658,47 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('App loaded');
 
-            // ===== ADMIN LOGIN BUTTON =====
-            const adminLoginBtn = document.getElementById('adminLoginBtn');
-            const loginOverlay = document.getElementById('loginOverlay');
-            const loginForm = document.getElementById('loginForm');
-            const loginError = document.getElementById('loginError');
-
-            adminLoginBtn.addEventListener('click', function(e) {
+            // ===== ADMIN LOGIN =====
+            document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
                 e.preventDefault();
-                console.log('Admin login button clicked');
-                loginOverlay.classList.add('active');
+                console.log('Admin login clicked');
+                document.getElementById('loginOverlay').classList.add('active');
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
-                loginError.classList.remove('show');
+                document.getElementById('loginError').classList.remove('show');
                 setTimeout(() => document.getElementById('username').focus(), 200);
             });
 
-            // ===== LOGIN FORM =====
-            loginForm.addEventListener('submit', function(e) {
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                console.log('Login form submitted');
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
                 
                 if (loginAdmin(username, password)) {
-                    console.log('Login successful!');
-                    loginOverlay.classList.remove('active');
-                    loginError.classList.remove('show');
+                    document.getElementById('loginOverlay').classList.remove('active');
+                    document.getElementById('loginError').classList.remove('show');
                     render();
                     updateUI();
                     showToast('👑 Welcome Admin!');
                 } else {
-                    console.log('Login failed');
-                    loginError.classList.add('show');
-                    setTimeout(() => loginError.classList.remove('show'), 3000);
+                    document.getElementById('loginError').classList.add('show');
+                    setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
                 }
             });
 
-            // ===== CLOSE LOGIN ON OVERLAY CLICK =====
-            loginOverlay.addEventListener('click', function(e) {
+            document.getElementById('loginOverlay').addEventListener('click', function(e) {
                 if (e.target === this) {
-                    console.log('Closing login overlay');
                     this.classList.remove('active');
-                    loginError.classList.remove('show');
+                    document.getElementById('loginError').classList.remove('show');
                 }
             });
 
-            // ===== CLOSE LOGIN ON ESCAPE =====
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    if (loginOverlay.classList.contains('active')) {
-                        loginOverlay.classList.remove('active');
-                        loginError.classList.remove('show');
+                    const overlay = document.getElementById('loginOverlay');
+                    if (overlay.classList.contains('active')) {
+                        overlay.classList.remove('active');
+                        document.getElementById('loginError').classList.remove('show');
                     }
                 }
             });
@@ -752,15 +712,13 @@
             });
 
             // ===== DELETE ALL =====
-            document.getElementById('deleteAllBtn').addEventListener('click', function() {
-                deleteAllBills();
-            });
+            document.getElementById('deleteAllBtn').addEventListener('click', deleteAllBills);
 
             // ===== FORM SUBMIT =====
             document.getElementById('billForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 if (!isAdmin()) {
-                    alert('Only admins can add bills! Login as Admin first.');
+                    alert('Login as Admin first!');
                     return;
                 }
 
@@ -772,14 +730,14 @@
                 const fileInput = document.getElementById('billFile');
 
                 if (!name || isNaN(amount) || amount <= 0 || !date) {
-                    alert('Please fill in all required fields (Name, Amount > 0, Date).');
+                    alert('Name, Amount (>0) and Date are required.');
                     return;
                 }
 
                 if (!isFixed && fileInput.files.length > 0) {
                     const file = fileInput.files[0];
                     if (file.size > 5 * 1024 * 1024) {
-                        alert('File is larger than 5MB. Please reduce the size.');
+                        alert('File is larger than 5MB.');
                         return;
                     }
                     const reader = new FileReader();
@@ -795,13 +753,8 @@
 
             // ===== TOGGLE FILE INPUT =====
             document.getElementById('isFixed').addEventListener('change', function() {
-                const fileGroup = document.getElementById('fileGroup');
-                if (this.checked) {
-                    fileGroup.style.display = 'none';
-                    document.getElementById('billFile').value = '';
-                } else {
-                    fileGroup.style.display = 'block';
-                }
+                document.getElementById('fileGroup').style.display = this.checked ? 'none' : 'block';
+                if (this.checked) document.getElementById('billFile').value = '';
             });
 
             // ===== FILTERS =====
@@ -822,26 +775,24 @@
             });
 
             document.getElementById('previewModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
+                if (e.target === this) this.classList.remove('active');
             });
 
             // ===== MODE TOGGLE =====
             document.getElementById('userModeBtn').addEventListener('click', function() {
                 if (isAdmin()) {
-                    if (confirm('Switch to User mode? You will lose admin access until you login again.')) {
+                    if (confirm('Switch to User mode?')) {
                         logoutAdmin();
                         render();
                         updateUI();
-                        showToast('👤 Switched to User mode');
+                        showToast('👤 User mode');
                     }
                 }
             });
 
             document.getElementById('adminModeBtn').addEventListener('click', function() {
                 if (!isAdmin()) {
-                    adminLoginBtn.click();
+                    document.getElementById('adminLoginBtn').click();
                 }
             });
 
