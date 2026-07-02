@@ -15,15 +15,17 @@
         
         /* ===== LOGIN OVERLAY ===== */
         .login-overlay { 
-            display: none; 
+            display: none !important; 
             position: fixed; 
             inset: 0; 
             background: rgba(0,0,0,0.7); 
             justify-content: center; 
             align-items: center; 
-            z-index: 9999; 
+            z-index: 99999; 
         }
-        .login-overlay.active { display: flex; }
+        .login-overlay.active { 
+            display: flex !important; 
+        }
         .login-box { 
             background: white; 
             padding: 40px; 
@@ -159,7 +161,6 @@
             align-items: center;
         }
         
-        /* Success message */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -170,7 +171,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             font-weight: 600;
-            z-index: 9999;
+            z-index: 99999;
             animation: slideUp 0.3s ease;
             display: none;
         }
@@ -409,7 +410,6 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // FILTER OUT INVALID BILLS (empty name OR amount is 0 OR no id)
                     bills = result.data.filter(b => {
                         const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
                         const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
@@ -428,12 +428,6 @@
             }
             render();
             updateStats();
-        }
-
-        // RELOAD function - forces refresh from Google Sheets
-        async function reloadBills() {
-            await loadFromGoogleSheets();
-            showToast('🔄 Bills refreshed!');
         }
 
         async function saveToGoogleSheets(bill) {
@@ -524,14 +518,10 @@
             };
             
             await saveToGoogleSheets(bill);
-            
-            // RELOAD from Google Sheets to get the latest data
             await loadFromGoogleSheets();
             
-            // Show success message
             showToast('✅ Bill "' + name + '" saved successfully!');
             
-            // Reset form
             document.getElementById('billForm').reset();
             document.getElementById('isFixed').checked = false;
             document.getElementById('fileGroup').style.display = 'block';
@@ -594,7 +584,6 @@
                 }).join('');
             }
 
-            // Preview buttons
             document.querySelectorAll('.preview-btn').forEach(el => {
                 el.onclick = function() {
                     const url = this.dataset.url;
@@ -603,7 +592,6 @@
                 };
             });
 
-            // Delete buttons
             document.querySelectorAll('.delete-btn').forEach(el => {
                 el.onclick = function() {
                     const id = parseFloat(this.dataset.id);
@@ -687,4 +675,184 @@
             } else if (url.startsWith('data:application/pdf')) {
                 content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
             } else {
-                content.innerHTML = `<p>Unable to preview this file. <a href="${url}" target="_blank
+                content.innerHTML = `<p>Unable to preview this file. <a href="${url}" target="_blank" style="color:#4299e1;">Open in new tab</a></p>`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App loaded');
+
+            // ===== ADMIN LOGIN BUTTON =====
+            const adminLoginBtn = document.getElementById('adminLoginBtn');
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
+            const loginError = document.getElementById('loginError');
+
+            adminLoginBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Admin login button clicked');
+                loginOverlay.classList.add('active');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                loginError.classList.remove('show');
+                setTimeout(() => document.getElementById('username').focus(), 200);
+            });
+
+            // ===== LOGIN FORM =====
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Login form submitted');
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (loginAdmin(username, password)) {
+                    console.log('Login successful!');
+                    loginOverlay.classList.remove('active');
+                    loginError.classList.remove('show');
+                    render();
+                    updateUI();
+                    showToast('👑 Welcome Admin!');
+                } else {
+                    console.log('Login failed');
+                    loginError.classList.add('show');
+                    setTimeout(() => loginError.classList.remove('show'), 3000);
+                }
+            });
+
+            // ===== CLOSE LOGIN ON OVERLAY CLICK =====
+            loginOverlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    console.log('Closing login overlay');
+                    this.classList.remove('active');
+                    loginError.classList.remove('show');
+                }
+            });
+
+            // ===== CLOSE LOGIN ON ESCAPE =====
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (loginOverlay.classList.contains('active')) {
+                        loginOverlay.classList.remove('active');
+                        loginError.classList.remove('show');
+                    }
+                }
+            });
+
+            // ===== LOGOUT =====
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logoutAdmin();
+                render();
+                updateUI();
+                showToast('👋 Logged out');
+            });
+
+            // ===== DELETE ALL =====
+            document.getElementById('deleteAllBtn').addEventListener('click', function() {
+                deleteAllBills();
+            });
+
+            // ===== FORM SUBMIT =====
+            document.getElementById('billForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!isAdmin()) {
+                    alert('Only admins can add bills! Login as Admin first.');
+                    return;
+                }
+
+                const name = document.getElementById('billName').value.trim();
+                const amount = parseFloat(document.getElementById('billAmount').value);
+                const date = document.getElementById('billDate').value.trim();
+                const category = document.getElementById('billCategory').value;
+                const isFixed = document.getElementById('isFixed').checked;
+                const fileInput = document.getElementById('billFile');
+
+                if (!name || isNaN(amount) || amount <= 0 || !date) {
+                    alert('Please fill in all required fields (Name, Amount > 0, Date).');
+                    return;
+                }
+
+                if (!isFixed && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File is larger than 5MB. Please reduce the size.');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const attachment = { name: file.name, type: file.type, data: event.target.result };
+                        saveBill(name, amount, date, category, isFixed, attachment);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    saveBill(name, amount, date, category, isFixed, null);
+                }
+            });
+
+            // ===== TOGGLE FILE INPUT =====
+            document.getElementById('isFixed').addEventListener('change', function() {
+                const fileGroup = document.getElementById('fileGroup');
+                if (this.checked) {
+                    fileGroup.style.display = 'none';
+                    document.getElementById('billFile').value = '';
+                } else {
+                    fileGroup.style.display = 'block';
+                }
+            });
+
+            // ===== FILTERS =====
+            document.getElementById('filterSearch').addEventListener('input', render);
+            document.getElementById('filterCategory').addEventListener('change', render);
+            document.getElementById('filterType').addEventListener('change', render);
+
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                document.getElementById('filterSearch').value = '';
+                document.getElementById('filterCategory').value = '';
+                document.getElementById('filterType').value = '';
+                render();
+            });
+
+            // ===== MODAL =====
+            document.getElementById('modalClose').addEventListener('click', function() {
+                document.getElementById('previewModal').classList.remove('active');
+            });
+
+            document.getElementById('previewModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+
+            // ===== MODE TOGGLE =====
+            document.getElementById('userModeBtn').addEventListener('click', function() {
+                if (isAdmin()) {
+                    if (confirm('Switch to User mode? You will lose admin access until you login again.')) {
+                        logoutAdmin();
+                        render();
+                        updateUI();
+                        showToast('👤 Switched to User mode');
+                    }
+                }
+            });
+
+            document.getElementById('adminModeBtn').addEventListener('click', function() {
+                if (!isAdmin()) {
+                    adminLoginBtn.click();
+                }
+            });
+
+            // ===== INIT =====
+            if (checkAdminSession()) {
+                console.log('Admin session restored');
+                updateUI();
+            }
+
+            loadFromGoogleSheets();
+        });
+    </script>
+</body>
+</html>
