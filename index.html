@@ -94,6 +94,20 @@
         .monthly-total .value { font-size: 28px; font-weight: 700; color: #2a69ac; }
         .monthly-total .sub { font-size: 14px; color: #718096; }
         
+        /* Loading animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            border-top: 3px solid #4299e1;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .status-emoji { font-size: 18px; }
+        
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
             .container { padding: 16px; }
@@ -144,8 +158,8 @@
             </div>
         </div>
 
-        <div class="sync-status synced" id="syncStatus">
-            <span>⏳</span> <span id="syncText">Loading data...</span>
+        <div class="sync-status" id="syncStatus">
+            <span class="status-emoji">⏳</span> <span id="syncText">Loading data...</span>
         </div>
 
         <div class="monthly-total" id="monthlyTotal">
@@ -252,6 +266,20 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
 
         // ============================================
+        // DEMO PODACI - AKO GOOGLE SHEETS NE RADI
+        // ============================================
+        const DEMO_BILLS = [
+            { id: 1, name: 'Monthly rent', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
+            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 5, name: 'Water bill', amount: 15, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', category: 'Utilities', isFixed: true, attachment: null },
+            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 8, name: 'Heating costs', amount: 40, date: 'July', category: 'Utilities', isFixed: true, attachment: null }
+        ];
+
+        // ============================================
         // AUTHENTICATION
         // ============================================
         const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
@@ -302,22 +330,28 @@
                 const result = await response.json();
                 console.log('📦 Response:', result);
                 
-                if (result.success) {
+                if (result.success && result.data && result.data.length > 0) {
                     bills = result.data.filter(b => {
                         const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
                         const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
                         const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
                         return hasValidId && hasValidName && hasValidAmount;
                     });
-                    console.log('✅ Loaded:', bills.length, 'valid bills');
+                    console.log('✅ Loaded from Google Sheets:', bills.length, 'bills');
                     setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
                 } else {
-                    throw new Error(result.error || 'Failed to load');
+                    // If no data from Google Sheets, use DEMO data
+                    console.log('⚠️ No data from Google Sheets, using DEMO data');
+                    bills = DEMO_BILLS;
+                    setSyncStatus('synced', '📋 Using demo data - ' + bills.length + ' bills shown');
+                    showToast('📋 Using demo data (Google Sheets not connected)');
                 }
             } catch (error) {
-                console.error('❌ Error:', error);
-                setSyncStatus('error', '❌ Error: ' + error.message);
-                bills = [];
+                console.error('❌ Error loading from Google Sheets:', error);
+                // Use DEMO data as fallback
+                bills = DEMO_BILLS;
+                setSyncStatus('error', '⚠️ Using demo data (Google Sheets error)');
+                showToast('⚠️ Using demo data (Google Sheets error)');
             }
             render();
             updateStats();
@@ -337,7 +371,7 @@
                 return true;
             } catch (error) {
                 console.error('❌ Save error:', error);
-                setSyncStatus('error', '❌ Save failed');
+                setSyncStatus('error', '❌ Save failed (saved locally)');
                 return false;
             }
         }
@@ -374,15 +408,26 @@
                     console.error('Failed to delete:', bill.id);
                 }
             }
+            // Remove all bills locally
+            bills = [];
             showToast('🗑️ All bills deleted!');
-            await loadFromGoogleSheets();
+            render();
+            updateStats();
+            updateMonthlyTotal();
+            setSyncStatus('synced', '✅ All bills deleted');
         }
 
         function setSyncStatus(status, message) {
             const el = document.getElementById('syncStatus');
             const text = document.getElementById('syncText');
+            const emoji = document.querySelector('.status-emoji');
+            
             el.className = 'sync-status ' + status;
             text.textContent = message;
+            
+            if (status === 'synced') emoji.textContent = '✅';
+            else if (status === 'syncing') emoji.textContent = '⏳';
+            else if (status === 'error') emoji.textContent = '⚠️';
         }
 
         // ============================================
@@ -404,8 +449,16 @@
                 attachmentName: attachment ? attachment.name : ''
             };
             
+            // Add to local array immediately
+            bills.unshift(bill);
+            
+            // Try to save to Google Sheets
             await saveToGoogleSheets(bill);
-            await loadFromGoogleSheets();
+            
+            // Refresh display
+            render();
+            updateStats();
+            updateMonthlyTotal();
             showToast('✅ Bill "' + name + '" saved!');
             
             document.getElementById('billForm').reset();
@@ -418,8 +471,17 @@
         async function deleteBill(id) {
             if (!isAdmin()) return;
             if (!confirm('Delete this bill?')) return;
+            
+            // Remove from local array
+            bills = bills.filter(b => b.id !== id);
+            
+            // Try to delete from Google Sheets
             await deleteFromGoogleSheets(id);
-            await loadFromGoogleSheets();
+            
+            // Refresh display
+            render();
+            updateStats();
+            updateMonthlyTotal();
             showToast('🗑️ Bill deleted!');
         }
 
@@ -448,7 +510,6 @@
             } else {
                 tbody.innerHTML = filtered.map(b => {
                     const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
-                    // Open attachment in new tab instead of iframe
                     const attachmentHtml = hasAttachment ?
                         `<a href="${b.attachment}" target="_blank" class="preview-link">📎 View</a>` :
                         '<span style="color:#a0aec0;">None</span>';
@@ -479,6 +540,8 @@
             updateStats();
             updateUI();
             updateMonthlyTotal();
+            
+            console.log('📊 Rendered:', filtered.length, 'bills');
         }
 
         function escapeHtml(text) {
@@ -647,6 +710,7 @@
                 updateUI();
             }
 
+            // Load data
             loadFromGoogleSheets();
         });
     </script>
