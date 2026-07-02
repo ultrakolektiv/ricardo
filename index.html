@@ -90,6 +90,8 @@
         .btn-logout:hover { background: #f56565; }
         .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .btn-admin-login:hover { background: #3182ce; }
+        .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; transition: 0.2s; }
+        .btn-danger-big:hover { background: #f56565; }
         
         .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
         .form-section.disabled { opacity: 0.5; pointer-events: none; }
@@ -149,6 +151,14 @@
         .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
         .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
         
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
             .container { padding: 16px; }
@@ -207,6 +217,12 @@
                 <button class="active" id="userModeBtn">👤 User Mode (View Only)</button>
                 <button id="adminModeBtn">👑 Admin Mode (Full Access)</button>
             </div>
+        </div>
+
+        <!-- TOOLBAR - Admin Actions -->
+        <div class="toolbar-actions" id="adminToolbar" style="display:none;">
+            <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
+            <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
         </div>
 
         <div class="form-section disabled" id="formSection">
@@ -356,8 +372,14 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    bills = result.data || [];
-                    console.log('Loaded:', bills.length, 'bills');
+                    // FILTER OUT INVALID BILLS (empty name OR amount is 0 OR no id)
+                    bills = result.data.filter(b => {
+                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
+                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
+                        const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
+                        return hasValidId && hasValidName && hasValidAmount;
+                    });
+                    console.log('Loaded:', bills.length, 'valid bills (filtered out empty ones)');
                     setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
                 } else {
                     throw new Error(result.error || 'Failed to load');
@@ -405,6 +427,33 @@
             }
         }
 
+        // Delete ALL bills - one by one
+        async function deleteAllBills() {
+            if (!isAdmin()) return;
+            if (!confirm('⚠️ Are you sure you want to delete ALL bills? This cannot be undone!')) return;
+            if (!confirm('⚠️ REALLY? All ' + bills.length + ' bills will be permanently deleted!')) return;
+
+            setSyncStatus('syncing', 'Deleting all bills...');
+            let deleted = 0;
+            let failed = 0;
+
+            for (const bill of bills) {
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + bill.id, {
+                        method: 'DELETE',
+                        mode: 'no-cors'
+                    });
+                    deleted++;
+                } catch (error) {
+                    console.error('Failed to delete:', bill.id, error);
+                    failed++;
+                }
+            }
+
+            setSyncStatus('synced', '✅ Deleted ' + deleted + ' bills' + (failed > 0 ? ' (' + failed + ' failed)' : ''));
+            await loadFromGoogleSheets();
+        }
+
         function setSyncStatus(status, message) {
             const el = document.getElementById('syncStatus');
             const text = document.getElementById('syncText');
@@ -423,7 +472,7 @@
             const bill = {
                 id: generateId(),
                 name: name,
-                amount: amount,
+                amount: parseFloat(amount),
                 date: date,
                 category: category,
                 isFixed: isFixed,
@@ -473,7 +522,7 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="empty">No bills found. Add your first bill!</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
-                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null';
+                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
                     const attachmentHtml = hasAttachment ?
                         `<button class="preview-btn" data-url="${b.attachment}" data-name="${b.name}">📎 Preview</button>` :
                         '<span style="color:#a0aec0; font-size:13px;">None</span>';
@@ -539,6 +588,7 @@
             document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
             document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
             document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-block' : 'none';
+            document.getElementById('adminToolbar').style.display = isAdminUser ? 'flex' : 'none';
 
             const formSection = document.getElementById('formSection');
             const restrictedMsg = document.getElementById('restrictedMsg');
@@ -607,27 +657,21 @@
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
                 document.getElementById('loginError').classList.remove('show');
-                // Focus on username field
                 setTimeout(() => document.getElementById('username').focus(), 100);
             });
 
             // ---- LOGIN FORM SUBMIT ----
             document.getElementById('loginForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                console.log('Login form submitted');
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
                 
-                console.log('Username entered:', username);
-                
                 if (loginAdmin(username, password)) {
-                    console.log('Login successful!');
                     document.getElementById('loginOverlay').classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
                     render();
                     updateUI();
                 } else {
-                    console.log('Login failed - wrong credentials');
                     document.getElementById('loginError').classList.add('show');
                     setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
                 }
@@ -636,13 +680,12 @@
             // ---- CLOSE LOGIN ON OUTSIDE CLICK ----
             document.getElementById('loginOverlay').addEventListener('click', function(e) {
                 if (e.target === this) {
-                    console.log('Closing login overlay');
                     this.classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
                 }
             });
 
-            // ---- CLOSE LOGIN ON ESCAPE KEY ----
+            // ---- CLOSE LOGIN ON ESCAPE ----
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     const overlay = document.getElementById('loginOverlay');
@@ -658,7 +701,11 @@
                 logoutAdmin();
                 render();
                 updateUI();
-                console.log('Admin logged out');
+            });
+
+            // ---- DELETE ALL BILLS ----
+            document.getElementById('deleteAllBtn').addEventListener('click', function() {
+                deleteAllBills();
             });
 
             // ---- FORM SUBMIT ----
@@ -676,8 +723,8 @@
                 const isFixed = document.getElementById('isFixed').checked;
                 const fileInput = document.getElementById('billFile');
 
-                if (!name || isNaN(amount) || !date) {
-                    alert('Please fill in all required fields (Name, Amount, Date).');
+                if (!name || isNaN(amount) || amount <= 0 || !date) {
+                    alert('Please fill in all required fields (Name, Amount > 0, Date).');
                     return;
                 }
 
@@ -750,13 +797,11 @@
             });
 
             // ---- INIT ----
-            // Check if admin session exists
             if (checkAdminSession()) {
                 console.log('Admin session restored from localStorage');
                 updateUI();
             }
 
-            // Load data from Google Sheets
             loadFromGoogleSheets();
         });
     </script>
