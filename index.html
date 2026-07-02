@@ -91,16 +91,9 @@
         .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .btn-admin-login:hover { background: #3182ce; }
         
-        /* ===== ADMIN ONLY - SKRIVENO ZA KORISNIKE ===== */
-        .admin-only {
-            display: none !important;
-        }
-        .admin-only.visible {
-            display: block !important;
-        }
-        .admin-only-flex.visible {
-            display: flex !important;
-        }
+        /* ===== ADMIN ONLY ===== */
+        .admin-only { display: none !important; }
+        .admin-only.visible { display: block !important; }
         
         .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -116,10 +109,8 @@
         .btn { padding: 12px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #4299e1; color: white; }
         .btn-primary:hover { background: #3182ce; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(66,153,225,0.4); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-danger { background: #fc8181; color: white; }
         .btn-danger:hover { background: #f56565; }
-        .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
         .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; transition: 0.2s; }
         .btn-danger-big:hover { background: #f56565; }
@@ -192,13 +183,26 @@
         .preview-btn { padding: 4px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .preview-btn:hover { background: #3182ce; }
         
+        .refresh-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #48bb78;
+            color: white;
+            transition: 0.2s;
+        }
+        .refresh-btn:hover { background: #38a169; }
+        
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
             .container { padding: 16px; }
             .stats { grid-template-columns: 1fr 1fr; }
             td, th { padding: 10px 12px; font-size: 13px; }
             .header { flex-direction: column; align-items: stretch; }
-            .user-info { justify-content: center; }
+            .user-info { justify-content: center; flex-wrap: wrap; }
             .modal iframe { height: 300px; }
             .toast { bottom: 10px; right: 10px; left: 10px; text-align: center; }
             .monthly-total { flex-direction: column; text-align: center; }
@@ -242,6 +246,7 @@
                 <span class="role-badge user" id="roleBadge">👤 User</span>
                 <button class="btn-admin-login" id="adminLoginBtn">🔑 Admin Login</button>
                 <button class="btn-logout" id="logoutBtn" style="display:none;">🚪 Logout</button>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
             </div>
         </div>
 
@@ -258,7 +263,7 @@
             </span>
         </div>
 
-        <!-- ===== ADMIN ONLY - Add Bill Form ===== -->
+        <!-- ===== ADMIN ONLY ===== -->
         <div class="admin-only" id="adminFormContainer">
             <div class="form-section">
                 <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
@@ -302,7 +307,6 @@
                 </form>
             </div>
 
-            <!-- Admin Toolbar -->
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
                 <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
                 <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
@@ -336,7 +340,7 @@
             <button class="btn btn-sm btn-primary" id="clearFilters">🔄 Clear Filters</button>
         </div>
 
-        <!-- ===== TABELA - OVO SVI VIDE ===== -->
+        <!-- ===== TABELA ===== -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -367,7 +371,7 @@
 
     <script>
         // ============================================
-        // 🔑 VAŠ GOOGLE SCRIPT URL - ZAMIJENITE!
+        // 🔑 VAŠ GOOGLE SCRIPT URL
         // ============================================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
 
@@ -420,8 +424,10 @@
         async function loadFromGoogleSheets() {
             setSyncStatus('syncing', 'Loading from Google Sheets...');
             try {
+                console.log('Fetching from:', GOOGLE_SCRIPT_URL + '?method=GET');
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
                 const result = await response.json();
+                console.log('Response:', result);
                 
                 if (result.success) {
                     bills = result.data.filter(b => {
@@ -430,13 +436,13 @@
                         const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
                         return hasValidId && hasValidName && hasValidAmount;
                     });
-                    console.log('Loaded:', bills.length, 'bills');
+                    console.log('✅ Loaded:', bills.length, 'valid bills');
                     setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
                 } else {
                     throw new Error(result.error || 'Failed to load');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('❌ Error loading:', error);
                 setSyncStatus('error', '❌ Error: ' + error.message);
                 bills = [];
             }
@@ -624,7 +630,6 @@
         }
 
         function updateMonthlyTotal() {
-            // Calculate total for current month
             let total = 0;
             const currentMonth = new Date().toLocaleString('default', { month: 'long' });
             bills.forEach(b => {
@@ -638,14 +643,12 @@
         function updateUI() {
             const isAdminUser = isAdmin();
             
-            // Update user info
             document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
             document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
             document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-block' : 'none';
 
-            // SHOW/HIDE Admin form and buttons
             const adminForm = document.getElementById('adminFormContainer');
             if (isAdminUser) {
                 adminForm.classList.add('visible');
@@ -687,12 +690,19 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('App loaded');
+            console.log('🚀 App loaded');
+
+            // ===== REFRESH BUTTON =====
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                console.log('🔄 Manual refresh clicked');
+                loadFromGoogleSheets();
+                showToast('🔄 Refreshing data...');
+            });
 
             // ===== ADMIN LOGIN =====
             document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
                 e.preventDefault();
-                console.log('Admin login clicked');
+                console.log('🔑 Admin login clicked');
                 document.getElementById('loginOverlay').classList.add('active');
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
@@ -811,10 +821,11 @@
 
             // ===== INIT =====
             if (checkAdminSession()) {
-                console.log('Admin session restored');
+                console.log('👑 Admin session restored');
                 updateUI();
             }
 
+            // Load data
             loadFromGoogleSheets();
         });
     </script>
