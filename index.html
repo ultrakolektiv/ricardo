@@ -90,13 +90,19 @@
         .btn-logout:hover { background: #f56565; }
         .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
         .btn-admin-login:hover { background: #3182ce; }
-        .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; transition: 0.2s; }
-        .btn-danger-big:hover { background: #f56565; }
-        .view-sheet-btn { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #34a853; color: white; transition: 0.2s; text-decoration: none; display: inline-block; }
-        .view-sheet-btn:hover { background: #2d9248; }
+        
+        /* ===== ADMIN ONLY - SKRIVENO ZA KORISNIKE ===== */
+        .admin-only {
+            display: none !important;
+        }
+        .admin-only.visible {
+            display: block !important;
+        }
+        .admin-only-flex.visible {
+            display: flex !important;
+        }
         
         .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
-        .form-section.disabled { opacity: 0.5; pointer-events: none; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-group { display: flex; flex-direction: column; gap: 4px; }
         .form-group.full-width { grid-column: 1 / -1; }
@@ -115,8 +121,8 @@
         .btn-danger:hover { background: #f56565; }
         .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
-        .preview-btn { padding: 4px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
-        .preview-btn:hover { background: #3182ce; }
+        .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; transition: 0.2s; }
+        .btn-danger-big:hover { background: #f56565; }
         
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: #f7fafc; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #4299e1; }
@@ -142,18 +148,10 @@
         .modal .close-btn { float: right; background: none; border: none; font-size: 28px; cursor: pointer; color: #718096; }
         .modal .close-btn:hover { color: #1a202c; }
         
-        .restricted-msg { color: #fc8181; font-size: 13px; margin-top: 4px; display: none; }
-        .restricted-msg.show { display: block; }
-        .mode-toggle { display: flex; align-items: center; gap: 8px; background: #f7fafc; padding: 4px; border-radius: 10px; border: 1px solid #e2e8f0; }
-        .mode-toggle button { padding: 6px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; background: transparent; color: #718096; }
-        .mode-toggle button.active { background: #4299e1; color: white; }
-        .mode-toggle button:hover:not(.active) { background: #edf2f7; }
         .sync-status { font-size: 13px; padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .sync-status.synced { background: #f0fff4; color: #22543d; border: 1px solid #c6f6d5; }
         .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
         .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
-        
-        .toolbar-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
         
         .toast {
             position: fixed;
@@ -175,7 +173,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        /* ===== MJESEČNI UKUPNI IZNOS ===== */
         .monthly-total {
             background: #ebf8ff;
             border: 2px solid #4299e1;
@@ -192,13 +189,15 @@
         .monthly-total .value { font-size: 28px; font-weight: 700; color: #2a69ac; }
         .monthly-total .sub { font-size: 14px; color: #718096; }
         
+        .preview-btn { padding: 4px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; transition: 0.2s; }
+        .preview-btn:hover { background: #3182ce; }
+        
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
             .container { padding: 16px; }
             .stats { grid-template-columns: 1fr 1fr; }
             td, th { padding: 10px 12px; font-size: 13px; }
             .header { flex-direction: column; align-items: stretch; }
-            .mode-toggle { width: 100%; justify-content: center; }
             .user-info { justify-content: center; }
             .modal iframe { height: 300px; }
             .toast { bottom: 10px; right: 10px; left: 10px; text-align: center; }
@@ -243,7 +242,6 @@
                 <span class="role-badge user" id="roleBadge">👤 User</span>
                 <button class="btn-admin-login" id="adminLoginBtn">🔑 Admin Login</button>
                 <button class="btn-logout" id="logoutBtn" style="display:none;">🚪 Logout</button>
-                <a href="#" id="viewSheetBtn" class="view-sheet-btn" target="_blank">📊 View Google Sheet</a>
             </div>
         </div>
 
@@ -253,68 +251,65 @@
 
         <!-- ===== MJESEČNI UKUPNI IZNOS ===== -->
         <div class="monthly-total" id="monthlyTotal">
-            <span class="label">📆 Monthly Total (July/August)</span>
+            <span class="label">📆 Monthly Total</span>
             <span>
                 <span class="value" id="monthlyTotalAmount">0.00</span>
                 <span class="sub">BAM</span>
             </span>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <div class="mode-toggle">
-                <button class="active" id="userModeBtn">👤 User Mode (View Only)</button>
-                <button id="adminModeBtn">👑 Admin Mode (Full Access)</button>
+        <!-- ===== ADMIN ONLY - Add Bill Form ===== -->
+        <div class="admin-only" id="adminFormContainer">
+            <div class="form-section">
+                <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
+                <form id="billForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billName">Bill Name *</label>
+                            <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="billAmount">Amount (BAM) *</label>
+                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
+                        </div>
+                        <div class="form-group">
+                            <label for="billDate">Month *</label>
+                            <input type="text" id="billDate" placeholder="e.g. July, August..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="billCategory">Category</label>
+                            <select id="billCategory">
+                                <option value="Stanovanje">Stanovanje</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Internet/Phone">Internet/Phone</option>
+                                <option value="Subscriptions">Subscriptions</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="isFixed" />
+                                <label for="isFixed" style="font-weight: 500;">Fixed bill (no attachment required)</label>
+                            </div>
+                        </div>
+                        <div class="form-group full-width" id="fileGroup">
+                            <label for="billFile">Attach image or PDF (optional)</label>
+                            <input type="file" id="billFile" accept=".pdf,image/*" />
+                            <small style="color:#718096;">Max file size: 5MB</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">💾 Save Bill</button>
+                </form>
+            </div>
+
+            <!-- Admin Toolbar -->
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
+                <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
             </div>
         </div>
 
-        <div class="toolbar-actions" id="adminToolbar" style="display:none;">
-            <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
-            <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
-        </div>
-
-        <div class="form-section disabled" id="formSection">
-            <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
-            <div class="restricted-msg show" id="restrictedMsg">⛔ You are in view-only mode. Login as Admin to add or delete bills.</div>
-            <form id="billForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="billName">Bill Name *</label>
-                        <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." />
-                    </div>
-                    <div class="form-group">
-                        <label for="billAmount">Amount (BAM) *</label>
-                        <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
-                    </div>
-                    <div class="form-group">
-                        <label for="billDate">Month *</label>
-                        <input type="text" id="billDate" placeholder="e.g. July, August..." />
-                    </div>
-                    <div class="form-group">
-                        <label for="billCategory">Category</label>
-                        <select id="billCategory">
-                            <option value="Stanovanje">Stanovanje</option>
-                            <option value="Utilities">Utilities</option>
-                            <option value="Internet/Phone">Internet/Phone</option>
-                            <option value="Subscriptions">Subscriptions</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="isFixed" />
-                            <label for="isFixed" style="font-weight: 500;">Fixed bill (no attachment required)</label>
-                        </div>
-                    </div>
-                    <div class="form-group full-width" id="fileGroup">
-                        <label for="billFile">Attach image or PDF (optional)</label>
-                        <input type="file" id="billFile" accept=".pdf,image/*" />
-                        <small style="color:#718096;">Max file size: 5MB</small>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Bill</button>
-            </form>
-        </div>
-
+        <!-- ===== STATS ===== -->
         <div class="stats" id="statsContainer">
             <div class="stat-card"><div class="label">Total Bills</div><div class="value" id="totalCount">0</div></div>
             <div class="stat-card"><div class="label">Total Amount</div><div class="value" id="totalAmount">0.00 BAM</div></div>
@@ -322,6 +317,7 @@
             <div class="stat-card"><div class="label">Variable</div><div class="value" id="variableCount">0</div></div>
         </div>
 
+        <!-- ===== FILTERI ===== -->
         <div class="filter-bar">
             <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
             <select id="filterCategory">
@@ -340,6 +336,7 @@
             <button class="btn btn-sm btn-primary" id="clearFilters">🔄 Clear Filters</button>
         </div>
 
+        <!-- ===== TABELA - OVO SVI VIDE ===== -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -370,14 +367,9 @@
 
     <script>
         // ============================================
-        // 🔑 VAŠ GOOGLE SCRIPT URL
+        // 🔑 VAŠ GOOGLE SCRIPT URL - ZAMIJENITE!
         // ============================================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
-        
-        // ============================================
-        // 🔗 LINK DO VAŠE GOOGLE SHEET TABELE
-        // ============================================
-        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/11EZiqkpn3APqPL4b9E9TvB-mbXUj4_0g4lwtGUFxZWI/edit?gid=0#gid=0';
 
         // ============================================
         // AUTHENTICATION
@@ -583,7 +575,7 @@
                     
                     const deleteBtn = isAdmin() ?
                         `<button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️</button>` :
-                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4;">🗑️</button>`;
+                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">🗑️</button>`;
                     
                     return `
                         <tr>
@@ -632,10 +624,11 @@
         }
 
         function updateMonthlyTotal() {
-            // Calculate total for current month (July/August)
+            // Calculate total for current month
             let total = 0;
+            const currentMonth = new Date().toLocaleString('default', { month: 'long' });
             bills.forEach(b => {
-                if (b.date && (b.date.includes('July') || b.date.includes('August') || b.date.includes('Jul') || b.date.includes('Aug'))) {
+                if (b.date && (b.date.includes(currentMonth) || b.date.includes(currentMonth.substring(0, 3)))) {
                     total += (b.amount || 0);
                 }
             });
@@ -644,30 +637,20 @@
 
         function updateUI() {
             const isAdminUser = isAdmin();
+            
+            // Update user info
             document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
             document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
             document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-block' : 'none';
-            document.getElementById('adminToolbar').style.display = isAdminUser ? 'flex' : 'none';
 
-            const formSection = document.getElementById('formSection');
-            const restrictedMsg = document.getElementById('restrictedMsg');
-            const saveBtn = document.getElementById('saveBtn');
-            const formInputs = document.querySelectorAll('#billForm input, #billForm select, #billForm .checkbox-group input');
-
+            // SHOW/HIDE Admin form and buttons
+            const adminForm = document.getElementById('adminFormContainer');
             if (isAdminUser) {
-                formSection.classList.remove('disabled');
-                restrictedMsg.classList.remove('show');
-                saveBtn.disabled = false;
-                formInputs.forEach(input => input.disabled = false);
-                document.getElementById('billFile').disabled = false;
+                adminForm.classList.add('visible');
             } else {
-                formSection.classList.add('disabled');
-                restrictedMsg.classList.add('show');
-                saveBtn.disabled = true;
-                formInputs.forEach(input => input.disabled = true);
-                document.getElementById('billFile').disabled = true;
+                adminForm.classList.remove('visible');
             }
         }
 
@@ -705,12 +688,6 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             console.log('App loaded');
-
-            // ===== VIEW GOOGLE SHEET =====
-            document.getElementById('viewSheetBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.open(GOOGLE_SHEET_URL, '_blank');
-            });
 
             // ===== ADMIN LOGIN =====
             document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
@@ -830,24 +807,6 @@
 
             document.getElementById('previewModal').addEventListener('click', function(e) {
                 if (e.target === this) this.classList.remove('active');
-            });
-
-            // ===== MODE TOGGLE =====
-            document.getElementById('userModeBtn').addEventListener('click', function() {
-                if (isAdmin()) {
-                    if (confirm('Switch to User mode?')) {
-                        logoutAdmin();
-                        render();
-                        updateUI();
-                        showToast('👤 User mode');
-                    }
-                }
-            });
-
-            document.getElementById('adminModeBtn').addEventListener('click', function() {
-                if (!isAdmin()) {
-                    document.getElementById('adminLoginBtn').click();
-                }
             });
 
             // ===== INIT =====
