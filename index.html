@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bill Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f4f8; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { max-width: 1200px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        h1 { color: #1a202c; margin-bottom: 8px; }
+        .subtitle { color: #718096; margin-bottom: 30px; }
+        .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
+        
+        .login-overlay { display: none !important; position: fixed; inset: 0; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 99999; }
+        .login-overlay.active { display: flex !important; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .login-box h2 { margin-bottom: 8px; color: #1a202c; }
+        .login-box p { color: #718096; margin-bottom: 24px; font-size: 14px; }
+        .login-box .form-group { margin-bottom: 16px; }
+        .login-box label { display: block; font-weight: 600; font-size: 14px; color: #2d3748; margin-bottom: 4px; }
+        .login-box input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; }
+        .login-box input:focus { outline: none; border-color: #4299e1; }
+        .login-box .btn { width: 100%; padding: 12px; margin-top: 8px; background: #4299e1; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-box .btn:hover { background: #3182ce; }
+        .login-error { color: #fc8181; font-size: 14px; margin-top: 8px; display: none; background: #fff5f5; padding: 8px 12px; border-radius: 8px; border: 1px solid #fed7d7; }
+        .login-error.show { display: block; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .role-badge.admin { background: #fefcbf; color: #975a16; }
+        .role-badge.user { background: #bee3f8; color: #2a69ac; }
+        .btn-logout { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; }
+        .btn-logout:hover { background: #f56565; }
+        .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; }
+        .btn-admin-login:hover { background: #3182ce; }
+        .refresh-btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #48bb78; color: white; }
+        .refresh-btn:hover { background: #38a169; }
+        
+        .admin-only { display: none !important; }
+        .admin-only.visible { display: block !important; }
+        
+        .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        label { font-weight: 600; font-size: 14px; color: #2d3748; }
+        input, select { padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 10px; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #4299e1; }
+        input[type="file"] { padding: 8px 0; border: none; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        
+        .btn { padding: 12px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #4299e1; color: white; }
+        .btn-primary:hover { background: #3182ce; }
+        .btn-danger { background: #fc8181; color: white; }
+        .btn-danger:hover { background: #f56565; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+        .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; }
+        .btn-danger-big:hover { background: #f56565; }
+        .preview-link { color: #4299e1; text-decoration: none; font-weight: 500; cursor: pointer; }
+        .preview-link:hover { text-decoration: underline; }
+        
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #f7fafc; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #4299e1; }
+        .stat-card .label { font-size: 13px; color: #718096; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #1a202c; }
+        
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #edf2f7; color: #2d3748; padding: 14px 16px; text-align: left; font-weight: 600; }
+        td { padding: 14px 16px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
+        tr:hover td { background: #f7fafc; }
+        .empty { text-align: center; padding: 40px 20px; color: #a0aec0; font-size: 18px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        
+        .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .filter-bar input, .filter-bar select { padding: 8px 14px; border-radius: 10px; border: 1px solid #cbd5e0; font-size: 14px; }
+        
+        .sync-status { font-size: 13px; padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .sync-status.synced { background: #f0fff4; color: #22543d; border: 1px solid #c6f6d5; }
+        .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
+        .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
+        
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #48bb78; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 600; z-index: 99999; animation: slideUp 0.3s ease; display: none; }
+        .toast.show { display: block; }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .monthly-total { background: #ebf8ff; border: 2px solid #4299e1; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .monthly-total .label { font-weight: 600; color: #2a69ac; font-size: 16px; }
+        .monthly-total .value { font-size: 28px; font-weight: 700; color: #2a69ac; }
+        .monthly-total .sub { font-size: 14px; color: #718096; }
+        
+        /* Loading animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            border-top: 3px solid #4299e1;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .status-emoji { font-size: 18px; }
+        
+        @media (max-width: 700px) {
+            .form-row { grid-template-columns: 1fr; }
+            .container { padding: 16px; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            td, th { padding: 10px 12px; font-size: 13px; }
+            .header { flex-direction: column; align-items: stretch; }
+            .user-info { justify-content: center; flex-wrap: wrap; }
+            .toast { bottom: 10px; right: 10px; left: 10px; text-align: center; }
+            .monthly-total { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast" id="toast">✅ Bill saved successfully!</div>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 Admin Login</h2>
+            <p>Enter admin credentials to enable full access</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" required autofocus />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" required />
+                </div>
+                <div class="login-error" id="loginError">❌ Invalid username or password. Please try again.</div>
+                <button type="submit" class="btn">🔑 Login as Admin</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📋 Bill Management <span class="online-badge">☁️ Google Sheets</span></h1>
+                <p class="subtitle">All bills saved in Google Sheets &amp; Google Drive</p>
+            </div>
+            <div class="user-info">
+                <span id="currentUserDisplay" style="font-weight:600;">👤 User (View Only)</span>
+                <span class="role-badge user" id="roleBadge">👤 User</span>
+                <button class="btn-admin-login" id="adminLoginBtn">🔑 Admin Login</button>
+                <button class="btn-logout" id="logoutBtn" style="display:none;">🚪 Logout</button>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div class="sync-status" id="syncStatus">
+            <span class="status-emoji">⏳</span> <span id="syncText">Loading data...</span>
+        </div>
+
+        <div class="monthly-total" id="monthlyTotal">
+            <span class="label">📆 Monthly Total</span>
+            <span><span class="value" id="monthlyTotalAmount">0.00</span> <span class="sub">BAM</span></span>
+        </div>
+
+        <div class="admin-only" id="adminFormContainer">
+            <div class="form-section">
+                <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
+                <form id="billForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billName">Bill Name *</label>
+                            <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="billAmount">Amount (BAM) *</label>
+                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
+                        </div>
+                        <div class="form-group">
+                            <label for="billDate">Month *</label>
+                            <input type="text" id="billDate" placeholder="e.g. July, August..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="billCategory">Category</label>
+                            <select id="billCategory">
+                                <option value="Stanovanje">Stanovanje</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Internet/Phone">Internet/Phone</option>
+                                <option value="Subscriptions">Subscriptions</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group full-width">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="isFixed" />
+                                <label for="isFixed" style="font-weight: 500;">Fixed bill (no attachment required)</label>
+                            </div>
+                        </div>
+                        <div class="form-group full-width" id="fileGroup">
+                            <label for="billFile">Attach image or PDF (optional)</label>
+                            <input type="file" id="billFile" accept=".pdf,image/*" />
+                            <small style="color:#718096;">Max file size: 5MB</small>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">💾 Save Bill</button>
+                </form>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
+                <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer">
+            <div class="stat-card"><div class="label">Total Bills</div><div class="value" id="totalCount">0</div></div>
+            <div class="stat-card"><div class="label">Total Amount</div><div class="value" id="totalAmount">0.00 BAM</div></div>
+            <div class="stat-card"><div class="label">Fixed</div><div class="value" id="fixedCount">0</div></div>
+            <div class="stat-card"><div class="label">Variable</div><div class="value" id="variableCount">0</div></div>
+        </div>
+
+        <div class="filter-bar">
+            <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
+            <select id="filterCategory">
+                <option value="">All categories</option>
+                <option value="Stanovanje">Stanovanje</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Internet/Phone">Internet/Phone</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Other">Other</option>
+            </select>
+            <select id="filterType">
+                <option value="">All types</option>
+                <option value="fixed">Fixed</option>
+                <option value="variable">Variable</option>
+            </select>
+            <button class="btn btn-sm btn-primary" id="clearFilters">🔄 Clear Filters</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Month</th>
+                        <th>Category</th>
+                        <th>Attachment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="billTableBody">
+                    <tr><td colspan="6" class="empty">Loading bills from Google Sheets...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 🔑 VAŠ GOOGLE SCRIPT URL - ZAMIJENITE!
+        // ============================================
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
+
+        // ============================================
+        // DEMO PODACI - AKO GOOGLE SHEETS NE RADI
+        // ============================================
+        const DEMO_BILLS = [
+            { id: 1, name: 'Monthly rent', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
+            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 5, name: 'Water bill', amount: 15, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', category: 'Utilities', isFixed: true, attachment: null },
+            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 8, name: 'Heating costs', amount: 40, date: 'July', category: 'Utilities', isFixed: true, attachment: null }
+        ];
+
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
+        let isAdminMode = false;
+
+        function loginAdmin(username, password) {
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                isAdminMode = true;
+                localStorage.setItem('adminMode', 'true');
+                return true;
+            }
+            return false;
+        }
+
+        function logoutAdmin() {
+            isAdminMode = false;
+            localStorage.removeItem('adminMode');
+        }
+
+        function checkAdminSession() {
+            const stored = localStorage.getItem('adminMode');
+            if (stored === 'true') { isAdminMode = true; return true; }
+            return false;
+        }
+
+        function isAdmin() { return isAdminMode; }
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ============================================
+        // DATA LAYER
+        // ============================================
+        let bills = [];
+
+        async function loadFromGoogleSheets() {
+            setSyncStatus('syncing', '⏳ Loading from Google Sheets...');
+            try {
+                console.log('📡 Fetching from:', GOOGLE_SCRIPT_URL + '?method=GET');
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
+                const result = await response.json();
+                console.log('📦 Response:', result);
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    bills = result.data.filter(b => {
+                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
+                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
+                        const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
+                        return hasValidId && hasValidName && hasValidAmount;
+                    });
+                    console.log('✅ Loaded from Google Sheets:', bills.length, 'bills');
+                    setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
+                } else {
+                    // If no data from Google Sheets, use DEMO data
+                    console.log('⚠️ No data from Google Sheets, using DEMO data');
+                    bills = DEMO_BILLS;
+                    setSyncStatus('synced', '📋 Using demo data - ' + bills.length + ' bills shown');
+                    showToast('📋 Using demo data (Google Sheets not connected)');
+                }
+            } catch (error) {
+                console.error('❌ Error loading from Google Sheets:', error);
+                // Use DEMO data as fallback
+                bills = DEMO_BILLS;
+                setSyncStatus('error', '⚠️ Using demo data (Google Sheets error)');
+                showToast('⚠️ Using demo data (Google Sheets error)');
+            }
+            render();
+            updateStats();
+            updateMonthlyTotal();
+        }
+
+        async function saveToGoogleSheets(bill) {
+            setSyncStatus('syncing', '⏳ Saving...');
+            try {
+                await fetch(GOOGLE_SCRIPT_URL + '?method=POST', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bill)
+                });
+                setSyncStatus('synced', '✅ Saved!');
+                return true;
+            } catch (error) {
+                console.error('❌ Save error:', error);
+                setSyncStatus('error', '❌ Save failed (saved locally)');
+                return false;
+            }
+        }
+
+        async function deleteFromGoogleSheets(id) {
+            setSyncStatus('syncing', '⏳ Deleting...');
+            try {
+                await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
+                    method: 'DELETE',
+                    mode: 'no-cors'
+                });
+                setSyncStatus('synced', '✅ Deleted!');
+                return true;
+            } catch (error) {
+                console.error('❌ Delete error:', error);
+                setSyncStatus('error', '❌ Delete failed');
+                return false;
+            }
+        }
+
+        async function deleteAllBills() {
+            if (!isAdmin()) return;
+            if (!confirm('⚠️ Delete ALL bills?')) return;
+            if (!confirm('REALLY? ' + bills.length + ' bills will be deleted!')) return;
+
+            setSyncStatus('syncing', '⏳ Deleting all...');
+            for (const bill of bills) {
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + bill.id, {
+                        method: 'DELETE',
+                        mode: 'no-cors'
+                    });
+                } catch (error) {
+                    console.error('Failed to delete:', bill.id);
+                }
+            }
+            // Remove all bills locally
+            bills = [];
+            showToast('🗑️ All bills deleted!');
+            render();
+            updateStats();
+            updateMonthlyTotal();
+            setSyncStatus('synced', '✅ All bills deleted');
+        }
+
+        function setSyncStatus(status, message) {
+            const el = document.getElementById('syncStatus');
+            const text = document.getElementById('syncText');
+            const emoji = document.querySelector('.status-emoji');
+            
+            el.className = 'sync-status ' + status;
+            text.textContent = message;
+            
+            if (status === 'synced') emoji.textContent = '✅';
+            else if (status === 'syncing') emoji.textContent = '⏳';
+            else if (status === 'error') emoji.textContent = '⚠️';
+        }
+
+        // ============================================
+        // CRUD
+        // ============================================
+        function generateId() {
+            return Date.now() + Math.random() * 1000;
+        }
+
+        async function saveBill(name, amount, date, category, isFixed, attachment) {
+            const bill = {
+                id: generateId(),
+                name: name,
+                amount: parseFloat(amount),
+                date: date,
+                category: category,
+                isFixed: isFixed,
+                attachment: attachment || null,
+                attachmentName: attachment ? attachment.name : ''
+            };
+            
+            // Add to local array immediately
+            bills.unshift(bill);
+            
+            // Try to save to Google Sheets
+            await saveToGoogleSheets(bill);
+            
+            // Refresh display
+            render();
+            updateStats();
+            updateMonthlyTotal();
+            showToast('✅ Bill "' + name + '" saved!');
+            
+            document.getElementById('billForm').reset();
+            document.getElementById('isFixed').checked = false;
+            document.getElementById('fileGroup').style.display = 'block';
+            document.getElementById('billFile').value = '';
+            document.getElementById('billName').focus();
+        }
+
+        async function deleteBill(id) {
+            if (!isAdmin()) return;
+            if (!confirm('Delete this bill?')) return;
+            
+            // Remove from local array
+            bills = bills.filter(b => b.id !== id);
+            
+            // Try to delete from Google Sheets
+            await deleteFromGoogleSheets(id);
+            
+            // Refresh display
+            render();
+            updateStats();
+            updateMonthlyTotal();
+            showToast('🗑️ Bill deleted!');
+        }
+
+        // ============================================
+        // RENDER
+        // ============================================
+        function render() {
+            const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
+            const category = document.getElementById('filterCategory')?.value || '';
+            const type = document.getElementById('filterType')?.value || '';
+
+            let filtered = bills.filter(b => {
+                const matchName = (b.name || '').toLowerCase().includes(search);
+                const matchCat = category ? (b.category || '') === category : true;
+                const matchType = type ? (type === 'fixed' ? b.isFixed : !b.isFixed) : true;
+                return matchName && matchCat && matchType;
+            });
+
+            filtered.sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
+
+            const tbody = document.getElementById('billTableBody');
+            if (!tbody) return;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty">No bills found. Add your first bill!</td></tr>`;
+            } else {
+                tbody.innerHTML = filtered.map(b => {
+                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
+                    const attachmentHtml = hasAttachment ?
+                        `<a href="${b.attachment}" target="_blank" class="preview-link">📎 View</a>` :
+                        '<span style="color:#a0aec0;">None</span>';
+                    
+                    const deleteBtn = isAdmin() ?
+                        `<button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️</button>` :
+                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">🗑️</button>`;
+                    
+                    return `
+                        <tr>
+                            <td><strong>${escapeHtml(b.name || '')}</strong></td>
+                            <td>${(b.amount || 0).toFixed(2)} BAM</td>
+                            <td>${escapeHtml(b.date || '')}</td>
+                            <td><span style="font-size:13px; color:#718096;">${escapeHtml(b.category || 'Other')}</span></td>
+                            <td>${attachmentHtml}</td>
+                            <td><div class="actions">${deleteBtn}</div></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            document.querySelectorAll('.delete-btn').forEach(el => {
+                el.onclick = function() {
+                    deleteBill(parseFloat(this.dataset.id));
+                };
+            });
+
+            updateStats();
+            updateUI();
+            updateMonthlyTotal();
+            
+            console.log('📊 Rendered:', filtered.length, 'bills');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').textContent = bills.length;
+            const total = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
+            document.getElementById('totalAmount').textContent = total.toFixed(2) + ' BAM';
+            const fixed = bills.filter(b => b.isFixed).length;
+            document.getElementById('fixedCount').textContent = fixed;
+            document.getElementById('variableCount').textContent = bills.length - fixed;
+        }
+
+        function updateMonthlyTotal() {
+            let total = 0;
+            const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+            bills.forEach(b => {
+                if (b.date && (b.date.includes(currentMonth) || b.date.includes(currentMonth.substring(0, 3)))) {
+                    total += (b.amount || 0);
+                }
+            });
+            document.getElementById('monthlyTotalAmount').textContent = total.toFixed(2);
+        }
+
+        function updateUI() {
+            const isAdminUser = isAdmin();
+            
+            document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
+            document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
+            document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
+            document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
+            document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-block' : 'none';
+
+            const adminForm = document.getElementById('adminFormContainer');
+            if (isAdminUser) {
+                adminForm.classList.add('visible');
+            } else {
+                adminForm.classList.remove('visible');
+            }
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 App loaded');
+
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                console.log('🔄 Manual refresh clicked');
+                loadFromGoogleSheets();
+                showToast('🔄 Refreshing data...');
+            });
+
+            document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🔑 Admin login clicked');
+                document.getElementById('loginOverlay').classList.add('active');
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('loginError').classList.remove('show');
+                setTimeout(() => document.getElementById('username').focus(), 200);
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value.trim();
+                
+                if (loginAdmin(username, password)) {
+                    document.getElementById('loginOverlay').classList.remove('active');
+                    document.getElementById('loginError').classList.remove('show');
+                    render();
+                    updateUI();
+                    showToast('👑 Welcome Admin!');
+                } else {
+                    document.getElementById('loginError').classList.add('show');
+                    setTimeout(() => document.getElementById('loginError').classList.remove('show'), 3000);
+                }
+            });
+
+            document.getElementById('loginOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    document.getElementById('loginError').classList.remove('show');
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const overlay = document.getElementById('loginOverlay');
+                    if (overlay.classList.contains('active')) {
+                        overlay.classList.remove('active');
+                        document.getElementById('loginError').classList.remove('show');
+                    }
+                }
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                logoutAdmin();
+                render();
+                updateUI();
+                showToast('👋 Logged out');
+            });
+
+            document.getElementById('deleteAllBtn').addEventListener('click', deleteAllBills);
+
+            document.getElementById('billForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!isAdmin()) {
+                    alert('Login as Admin first!');
+                    return;
+                }
+
+                const name = document.getElementById('billName').value.trim();
+                const amount = parseFloat(document.getElementById('billAmount').value);
+                const date = document.getElementById('billDate').value.trim();
+                const category = document.getElementById('billCategory').value;
+                const isFixed = document.getElementById('isFixed').checked;
+                const fileInput = document.getElementById('billFile');
+
+                if (!name || isNaN(amount) || amount <= 0 || !date) {
+                    alert('Name, Amount (>0) and Month are required.');
+                    return;
+                }
+
+                if (!isFixed && fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File is larger than 5MB.');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        const attachment = { name: file.name, type: file.type, data: event.target.result };
+                        saveBill(name, amount, date, category, isFixed, attachment);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    saveBill(name, amount, date, category, isFixed, null);
+                }
+            });
+
+            document.getElementById('isFixed').addEventListener('change', function() {
+                document.getElementById('fileGroup').style.display = this.checked ? 'none' : 'block';
+                if (this.checked) document.getElementById('billFile').value = '';
+            });
+
+            document.getElementById('filterSearch').addEventListener('input', render);
+            document.getElementById('filterCategory').addEventListener('change', render);
+            document.getElementById('filterType').addEventListener('change', render);
+
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                document.getElementById('filterSearch').value = '';
+                document.getElementById('filterCategory').value = '';
+                document.getElementById('filterType').value = '';
+                render();
+            });
+
+            if (checkAdminSession()) {
+                console.log('👑 Admin session restored');
+                updateUI();
+            }
+
+            // Load data
+            loadFromGoogleSheets();
+        });
+    </script>
+</body>
+</html>
