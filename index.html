@@ -795,7 +795,7 @@
         }
 
         // ============================================
-        // CRUD
+        // CRUD - POTPUNO BEZ CATEGORY
         // ============================================
         async function saveBill(name, amount, date, isFixed, attachment) {
             const bill = {
@@ -807,6 +807,8 @@
                 attachment: attachment || null,
                 attachmentName: attachment ? attachment.name : ''
             };
+            
+            console.log('Saving bill:', bill);
             
             bills.unshift(bill);
             await saveToGoogleSheets(bill);
@@ -847,7 +849,7 @@
         }
 
         // ============================================
-        // RENDER
+        // RENDER - BEZ CATEGORY
         // ============================================
         function render() {
             const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
@@ -1042,6 +1044,8 @@
                 const date = document.getElementById('billDate').value.trim();
                 const isFixed = document.getElementById('isFixed').checked;
                 const fileInput = document.getElementById('billFile');
+
+                console.log('Form data:', { name, amount, date, isFixed, hasFile: fileInput.files.length > 0 });
 
                 if (!name || isNaN(amount) || amount <= 0 || !date) {
                     alert('Name, Amount (>0) and Month are required.');
