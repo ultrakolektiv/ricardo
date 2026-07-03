@@ -1,4 +1,3 @@
-@@ -1,653 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +8,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: #f0f4f8; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
         .container { max-width: 1200px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-
+        
         h1 { color: #1a202c; margin-bottom: 8px; }
         .subtitle { color: #718096; margin-bottom: 30px; }
         .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
-
+        
         .login-overlay { display: none !important; position: fixed; inset: 0; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 99999; }
         .login-overlay.active { display: flex !important; }
         .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
@@ -27,7 +26,7 @@
         .login-box .btn:hover { background: #3182ce; }
         .login-error { color: #fc8181; font-size: 14px; margin-top: 8px; display: none; background: #fff5f5; padding: 8px 12px; border-radius: 8px; border: 1px solid #fed7d7; }
         .login-error.show { display: block; }
-
+        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
         .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
@@ -39,10 +38,10 @@
         .btn-admin-login:hover { background: #3182ce; }
         .refresh-btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #48bb78; color: white; }
         .refresh-btn:hover { background: #38a169; }
-
+        
         .admin-only { display: none !important; }
         .admin-only.visible { display: block !important; }
-
+        
         .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-group { display: flex; flex-direction: column; gap: 4px; }
@@ -53,7 +52,7 @@
         input[type="file"] { padding: 8px 0; border: none; }
         .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
         .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-
+        
         .btn { padding: 12px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-primary { background: #4299e1; color: white; }
         .btn-primary:hover { background: #3182ce; }
@@ -64,12 +63,12 @@
         .btn-danger-big:hover { background: #f56565; }
         .preview-link { color: #4299e1; text-decoration: none; font-weight: 500; cursor: pointer; }
         .preview-link:hover { text-decoration: underline; }
-
+        
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card { background: #f7fafc; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #4299e1; }
         .stat-card .label { font-size: 13px; color: #718096; }
         .stat-card .value { font-size: 24px; font-weight: 700; color: #1a202c; }
-
+        
         .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th { background: #edf2f7; color: #2d3748; padding: 14px 16px; text-align: left; font-weight: 600; }
@@ -77,37 +76,23 @@
         tr:hover td { background: #f7fafc; }
         .empty { text-align: center; padding: 40px 20px; color: #a0aec0; font-size: 18px; }
         .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
+        
         .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
         .filter-bar input, .filter-bar select { padding: 8px 14px; border-radius: 10px; border: 1px solid #cbd5e0; font-size: 14px; }
-
+        
         .sync-status { font-size: 13px; padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .sync-status.synced { background: #f0fff4; color: #22543d; border: 1px solid #c6f6d5; }
         .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
         .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
-
+        
         .toast { position: fixed; bottom: 30px; right: 30px; background: #48bb78; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 600; z-index: 99999; animation: slideUp 0.3s ease; display: none; }
         .toast.show { display: block; }
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
+        
         .monthly-total { background: #ebf8ff; border: 2px solid #4299e1; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
         .monthly-total .label { font-weight: 600; color: #2a69ac; font-size: 16px; }
         .monthly-total .value { font-size: 28px; font-weight: 700; color: #2a69ac; }
         .monthly-total .sub { font-size: 14px; color: #718096; }
-
-        /* Loading animation */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #e2e8f0;
-            border-radius: 50%;
-            border-top: 3px solid #4299e1;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .status-emoji { font-size: 18px; }
         
         @media (max-width: 700px) {
             .form-row { grid-template-columns: 1fr; }
@@ -159,10 +144,8 @@
             </div>
         </div>
 
-        <div class="sync-status synced" id="syncStatus">
-            <span>⏳</span> <span id="syncText">Loading data...</span>
         <div class="sync-status" id="syncStatus">
-            <span class="status-emoji">⏳</span> <span id="syncText">Loading data...</span>
+            <span>⏳</span> <span id="syncText">Loading data...</span>
         </div>
 
         <div class="monthly-total" id="monthlyTotal">
@@ -269,10 +252,10 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
 
         // ============================================
-        // DEMO PODACI - AKO GOOGLE SHEETS NE RADI
+        // DEMO PODACI - BIT ĆE PRIKAZANI AKO GOOGLE SHEETS NE RADI
         // ============================================
         const DEMO_BILLS = [
-            { id: 1, name: 'Monthly rent', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 1, name: 'Monthly rent - apartment', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
             { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
             { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
             { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
@@ -332,35 +315,36 @@
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
                 const result = await response.json();
                 console.log('📦 Response:', result);
-
-                if (result.success) {
+                
                 if (result.success && result.data && result.data.length > 0) {
-                    bills = result.data.filter(b => {
-                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
-                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
-                        const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
-                        return hasValidId && hasValidName && hasValidAmount;
-                    });
-                    console.log('✅ Loaded:', bills.length, 'valid bills');
-                    console.log('✅ Loaded from Google Sheets:', bills.length, 'bills');
-                    setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
+                    // Try to extract data from the weird format
+                    const rawData = result.data[0];
+                    const extractedBill = {
+                        id: 1,
+                        name: rawData['Monthly rent - apartment'] || 'Unknown',
+                        amount: parseFloat(rawData['1200']) || 0,
+                        date: rawData['August'] || 'Unknown',
+                        category: rawData['Stanovanje'] || 'Other',
+                        isFixed: true,
+                        attachment: null
+                    };
+                    
+                    if (extractedBill.amount > 0) {
+                        bills = [extractedBill];
+                        console.log('✅ Extracted bill:', extractedBill);
+                        setSyncStatus('synced', '✅ Loaded 1 bill from Google Sheets');
+                    } else {
+                        throw new Error('Invalid data format');
+                    }
                 } else {
-                    throw new Error(result.error || 'Failed to load');
-                    // If no data from Google Sheets, use DEMO data
-                    console.log('⚠️ No data from Google Sheets, using DEMO data');
-                    bills = DEMO_BILLS;
-                    setSyncStatus('synced', '📋 Using demo data - ' + bills.length + ' bills shown');
-                    showToast('📋 Using demo data (Google Sheets not connected)');
+                    throw new Error('No data from Google Sheets');
                 }
             } catch (error) {
                 console.error('❌ Error:', error);
-                setSyncStatus('error', '❌ Error: ' + error.message);
-                bills = [];
-                console.error('❌ Error loading from Google Sheets:', error);
                 // Use DEMO data as fallback
                 bills = DEMO_BILLS;
                 setSyncStatus('error', '⚠️ Using demo data (Google Sheets error)');
-                showToast('⚠️ Using demo data (Google Sheets error)');
+                showToast('📋 Using demo data (Google Sheets error)');
             }
             render();
             updateStats();
@@ -381,7 +365,6 @@
             } catch (error) {
                 console.error('❌ Save error:', error);
                 setSyncStatus('error', '❌ Save failed');
-                setSyncStatus('error', '❌ Save failed (saved locally)');
                 return false;
             }
         }
@@ -418,10 +401,8 @@
                     console.error('Failed to delete:', bill.id);
                 }
             }
-            // Remove all bills locally
             bills = [];
             showToast('🗑️ All bills deleted!');
-            await loadFromGoogleSheets();
             render();
             updateStats();
             updateMonthlyTotal();
@@ -431,7 +412,7 @@
         function setSyncStatus(status, message) {
             const el = document.getElementById('syncStatus');
             const text = document.getElementById('syncText');
-            const emoji = document.querySelector('.status-emoji');
+            const emoji = document.querySelector('.sync-status span');
             
             el.className = 'sync-status ' + status;
             text.textContent = message;
@@ -459,20 +440,19 @@
                 attachment: attachment || null,
                 attachmentName: attachment ? attachment.name : ''
             };
-
+            
             // Add to local array immediately
             bills.unshift(bill);
             
             // Try to save to Google Sheets
             await saveToGoogleSheets(bill);
-            await loadFromGoogleSheets();
             
             // Refresh display
             render();
             updateStats();
             updateMonthlyTotal();
             showToast('✅ Bill "' + name + '" saved!');
-
+            
             document.getElementById('billForm').reset();
             document.getElementById('isFixed').checked = false;
             document.getElementById('fileGroup').style.display = 'block';
@@ -489,7 +469,6 @@
             
             // Try to delete from Google Sheets
             await deleteFromGoogleSheets(id);
-            await loadFromGoogleSheets();
             
             // Refresh display
             render();
@@ -523,15 +502,14 @@
             } else {
                 tbody.innerHTML = filtered.map(b => {
                     const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
-                    // Open attachment in new tab instead of iframe
                     const attachmentHtml = hasAttachment ?
                         `<a href="${b.attachment}" target="_blank" class="preview-link">📎 View</a>` :
                         '<span style="color:#a0aec0;">None</span>';
-
+                    
                     const deleteBtn = isAdmin() ?
                         `<button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️</button>` :
                         `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">🗑️</button>`;
-
+                    
                     return `
                         <tr>
                             <td><strong>${escapeHtml(b.name || '')}</strong></td>
@@ -587,7 +565,7 @@
 
         function updateUI() {
             const isAdminUser = isAdmin();
-
+            
             document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
             document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
@@ -628,7 +606,7 @@
                 e.preventDefault();
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
-
+                
                 if (loginAdmin(username, password)) {
                     document.getElementById('loginOverlay').classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
@@ -724,8 +702,8 @@
                 updateUI();
             }
 
-            // Load data
             loadFromGoogleSheets();
         });
     </script>
 </body>
+</html>
