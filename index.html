@@ -185,6 +185,7 @@
             min-width: 140px;
         }
         .filter-bar input:focus { outline: none; border-color: #0f172a; }
+        .filter-bar .btn { flex-shrink: 0; }
         
         .table-wrapper {
             border-radius: 12px;
@@ -436,6 +437,7 @@
 
         let bills = [];
         let isAdminMode = false;
+        let isLoading = false;
 
         const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
 
@@ -472,6 +474,9 @@
         // DATA LAYER - RADI SA GOOGLE SHEETS
         // ============================================
         async function loadFromGoogleSheets() {
+            if (isLoading) return;
+            isLoading = true;
+            
             try {
                 console.log('📡 Loading from Google Sheets...');
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
@@ -481,14 +486,12 @@
                 if (result.success && result.data && result.data.length > 0) {
                     const rawData = result.data;
                     const formattedBills = rawData.map(row => {
-                        // Ako je data u starom formatu (sa čudnim ključevima)
                         let name = row.name || row['Monthly rent - apartment'] || 'Unknown';
                         let amount = parseFloat(row.amount || row['1200'] || 0);
                         let date = row.date || row['August'] || 'Unknown';
                         let isFixed = row.isFixed === true || row.isFixed === 'true' || false;
                         let attachment = row.attachment || null;
                         
-                        // Ako attachment nije string, postavi ga na null
                         if (attachment && typeof attachment !== 'string') {
                             attachment = null;
                         }
@@ -503,15 +506,25 @@
                         };
                     }).filter(b => b.amount > 0 && b.name !== 'Unknown');
                     
-                    if (formattedBills.length > 0) {
-                        bills = formattedBills;
+                    // DEDUPLICIRAJ - ukloni duplikate po name + amount + date
+                    const seen = new Set();
+                    const uniqueBills = formattedBills.filter(b => {
+                        const key = b.name + b.amount + b.date;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                    
+                    if (uniqueBills.length > 0) {
+                        bills = uniqueBills;
                         document.getElementById('statusText').textContent = '✅ Synced (' + bills.length + ' bills)';
                         render();
                         updateStats();
+                        isLoading = false;
                         return;
                     }
                 }
-                // Ako nema podataka, koristi demo
+                
                 bills = JSON.parse(JSON.stringify(DEMO_BILLS));
                 document.getElementById('statusText').textContent = '📋 Demo data';
                 render();
@@ -523,13 +536,16 @@
                 render();
                 updateStats();
             }
+            isLoading = false;
         }
 
         async function saveToGoogleSheets(bill) {
             try {
                 console.log('💾 Saving to Google Sheets:', bill);
-                await fetch(GOOGLE_SCRIPT_URL + '?method=POST', {
-                    method: 'POST',
+                // Koristi GET sa method=POST parametrom (umjesto POST metode)
+                const url = GOOGLE_SCRIPT_URL + '?method=POST';
+                await fetch(url, {
+                    method: 'GET',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bill)
@@ -545,8 +561,10 @@
         async function deleteFromGoogleSheets(id) {
             try {
                 console.log('🗑️ Deleting from Google Sheets:', id);
-                await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
-                    method: 'DELETE',
+                // Koristi GET sa method=DELETE parametrom (umjesto DELETE metode)
+                const url = GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id;
+                await fetch(url, {
+                    method: 'GET',
                     mode: 'no-cors'
                 });
                 return true;
@@ -576,12 +594,10 @@
             
             console.log('💾 Saving bill:', bill);
             
-            // Dodaj u lokalnu listu odmah
             bills.unshift(bill);
             render();
             updateStats();
             
-            // Pokušaj sačuvati u Google Sheets
             await saveToGoogleSheets(bill);
             
             showToast('✅ Bill "' + name + '" saved!');
@@ -592,7 +608,6 @@
             document.getElementById('billFile').value = '';
             document.getElementById('billName').focus();
             
-            // Ponovo učitaj podatke iz Google Sheets da bi bili sinhronizovani
             setTimeout(() => loadFromGoogleSheets(), 500);
         }
 
@@ -606,6 +621,7 @@
             
             await deleteFromGoogleSheets(id);
             showToast('🗑️ Bill deleted!');
+            setTimeout(() => loadFromGoogleSheets(), 500);
         }
 
         async function deleteAllBills() {
@@ -620,10 +636,11 @@
             render();
             updateStats();
             showToast('🗑️ All bills deleted!');
+            setTimeout(() => loadFromGoogleSheets(), 500);
         }
 
         // ============================================
-        // RENDER - POPRAVLJEN startsWith ERROR
+        // RENDER
         // ============================================
         function render() {
             const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
@@ -642,15 +659,12 @@
                 tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found.</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
-                    // SIGURNA PROVJERA ZA ATTACHMENT
                     let hasAttachment = false;
                     let attachmentValue = b.attachment;
                     
-                    // Provjeri da li attachment postoji i da li je string
                     if (attachmentValue && typeof attachmentValue === 'string') {
                         hasAttachment = attachmentValue !== '' && attachmentValue !== 'null' && attachmentValue !== 'undefined';
                     } else if (attachmentValue && typeof attachmentValue === 'object') {
-                        // Ako je attachment objekat (sa data poljem)
                         hasAttachment = attachmentValue.data && attachmentValue.data !== '';
                         if (hasAttachment) {
                             attachmentValue = attachmentValue.data;
@@ -770,7 +784,6 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Load from Google Sheets
             loadFromGoogleSheets();
 
             document.getElementById('refreshBtn').addEventListener('click', function() {
@@ -842,8 +855,6 @@
                 const date = document.getElementById('billDate').value.trim();
                 const isFixed = document.getElementById('isFixed').checked;
                 const fileInput = document.getElementById('billFile');
-
-                console.log('📝 Form data:', { name, amount, date, isFixed, hasFile: fileInput.files.length > 0 });
 
                 if (!name || isNaN(amount) || amount <= 0 || !date) {
                     alert('Name, Amount (>0) and Month are required.');
