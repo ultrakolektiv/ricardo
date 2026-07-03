@@ -104,6 +104,7 @@
         }
         .btn-primary { background: #0f172a; color: white; }
         .btn-primary:hover { background: #1e293b; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-outline { background: transparent; color: #475569; border: 1px solid #e2e8f0; }
         .btn-outline:hover { background: #f8fafc; }
         .btn-danger { background: #fef2f2; color: #b91c1c; }
@@ -266,8 +267,7 @@
             font-weight: 600;
             color: #334155;
         }
-        .form-group input,
-        .form-group select {
+        .form-group input {
             padding: 8px 12px;
             border: 1.5px solid #e2e8f0;
             border-radius: 10px;
@@ -277,8 +277,7 @@
             width: 100%;
             -webkit-appearance: none;
         }
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #0f172a;
             box-shadow: 0 0 0 3px rgba(15,23,42,0.08);
@@ -324,25 +323,22 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .filter-bar input,
-        .filter-bar select {
+        .filter-bar input {
             padding: 7px 12px;
             border: 1.5px solid #e2e8f0;
             border-radius: 10px;
             font-size: 13px;
             background: white;
             transition: 0.2s;
-            flex: 1 1 120px;
-            min-width: 100px;
+            flex: 2 1 160px;
+            min-width: 140px;
             -webkit-appearance: none;
         }
-        .filter-bar input:focus,
-        .filter-bar select:focus {
+        .filter-bar input:focus {
             outline: none;
             border-color: #0f172a;
             box-shadow: 0 0 0 3px rgba(15,23,42,0.08);
         }
-        .filter-bar input { flex: 2 1 160px; min-width: 140px; }
         .filter-bar .btn { flex-shrink: 0; }
         
         /* ===== TABLE ===== */
@@ -386,19 +382,6 @@
         
         td .name { font-weight: 600; color: #0f172a; }
         td .amount { font-weight: 600; color: #0f172a; }
-        
-        td .category-badge {
-            font-size: 10px;
-            padding: 2px 10px;
-            border-radius: 100px;
-            background: #f1f5f9;
-            color: #475569;
-            display: inline-block;
-            white-space: nowrap;
-        }
-        td .category-badge.utilities { background: #dbeafe; color: #1e40af; }
-        td .category-badge.stanovanje { background: #fef3c7; color: #92400e; }
-        td .category-badge.internet { background: #dcfce7; color: #15803d; }
         
         .actions-cell {
             display: flex;
@@ -516,18 +499,15 @@
             .form-section { padding: 12px; }
             .form-section h3 { font-size: 14px; }
             
-            .filter-bar input,
-            .filter-bar select {
+            .filter-bar input {
                 font-size: 12px;
                 padding: 6px 10px;
                 flex: 1 1 100%;
-                min-width: 80px;
+                min-width: 100px;
             }
-            .filter-bar input { flex: 1 1 100%; min-width: 100px; }
             
             th { padding: 8px 10px; font-size: 9px; }
             td { padding: 8px 10px; font-size: 12px; }
-            td .category-badge { font-size: 9px; padding: 1px 8px; }
             .attachment-link { font-size: 11px; padding: 2px 8px; }
             .btn-danger-sm { font-size: 10px; padding: 2px 8px; }
             .actions-cell { gap: 4px; }
@@ -540,7 +520,6 @@
             .stats { grid-template-columns: 1fr; }
             .header { flex-direction: column; align-items: stretch; }
             .header-right { justify-content: flex-start; flex-wrap: wrap; }
-            .header-right .btn { font-size: 11px; }
             
             .toast {
                 left: 10px;
@@ -550,15 +529,11 @@
             }
             
             .login-box { padding: 24px 16px; }
-            .login-box h2 { font-size: 18px; }
         }
         
-        /* ===== MOBILE TOUCH IMPROVEMENTS ===== */
         @media (hover: none) {
-            .btn:hover { transform: none; }
             .btn:active { opacity: 0.7; }
             .attachment-link:active { background: #e2e8f0; }
-            .btn-danger-sm:active { background: #fee2e2; }
             .btn-primary:active { background: #1e293b; }
         }
     </style>
@@ -624,7 +599,7 @@
             </div>
         </div>
 
-        <!-- ADMIN FORM -->
+        <!-- ADMIN FORM - BEZ CATEGORY -->
         <div class="admin-only" id="adminFormContainer">
             <div class="form-section">
                 <h3>➕ Add New Bill</h3>
@@ -632,25 +607,15 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="billName">Bill Name *</label>
-                            <input type="text" id="billName" placeholder="e.g. Electricity..." />
+                            <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." required />
                         </div>
                         <div class="form-group">
                             <label for="billAmount">Amount (BAM) *</label>
-                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
+                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" required />
                         </div>
                         <div class="form-group">
                             <label for="billDate">Month *</label>
-                            <input type="text" id="billDate" placeholder="e.g. July, August..." />
-                        </div>
-                        <div class="form-group">
-                            <label for="billCategory">Category</label>
-                            <select id="billCategory">
-                                <option value="Stanovanje">Stanovanje</option>
-                                <option value="Utilities">Utilities</option>
-                                <option value="Internet/Phone">Internet/Phone</option>
-                                <option value="Subscriptions">Subscriptions</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <input type="text" id="billDate" placeholder="e.g. July, August..." required />
                         </div>
                         <div class="form-group full-width">
                             <div class="checkbox-group">
@@ -665,33 +630,20 @@
                         </div>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">💾 Save Bill</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Bill</button>
                         <button type="button" class="btn btn-danger" id="deleteAllBtn">🗑️ Delete All</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- FILTER -->
+        <!-- FILTER - SAMO PRETRAGA -->
         <div class="filter-bar">
-            <input type="text" id="filterSearch" placeholder="🔍 Search..." />
-            <select id="filterCategory">
-                <option value="">All categories</option>
-                <option value="Stanovanje">Stanovanje</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Internet/Phone">Internet/Phone</option>
-                <option value="Subscriptions">Subscriptions</option>
-                <option value="Other">Other</option>
-            </select>
-            <select id="filterType">
-                <option value="">All types</option>
-                <option value="fixed">Fixed</option>
-                <option value="variable">Variable</option>
-            </select>
+            <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
             <button class="btn btn-outline btn-sm" id="clearFilters">Clear</button>
         </div>
 
-        <!-- TABLE -->
+        <!-- TABLE - BEZ CATEGORY KOLONE -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -699,13 +651,12 @@
                         <th>Name</th>
                         <th>Amount</th>
                         <th>Month</th>
-                        <th>Category</th>
                         <th>Attachment</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="billTableBody">
-                    <tr><td colspan="6" class="empty">Loading bills...</td></tr>
+                    <tr><td colspan="5" class="empty">Loading bills...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -726,15 +677,18 @@
         // ============================================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
 
+        // ============================================
+        // DEMO PODACI (BEZ CATEGORY)
+        // ============================================
         const DEMO_BILLS = [
-            { id: 1, name: 'Monthly rent - apartment', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
-            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
-            { id: 5, name: 'Water bill', amount: 15, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
-            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', category: 'Utilities', isFixed: true, attachment: null },
-            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 8, name: 'Heating costs', amount: 40, date: 'July', category: 'Utilities', isFixed: true, attachment: null }
+            { id: 1, name: 'Monthly rent - apartment', amount: 1200, date: 'August', isFixed: true, attachment: null },
+            { id: 2, name: 'Garage rent', amount: 100, date: 'July', isFixed: true, attachment: null },
+            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', isFixed: true, attachment: null },
+            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', isFixed: false, attachment: null },
+            { id: 5, name: 'Water bill', amount: 15, date: 'July', isFixed: false, attachment: null },
+            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', isFixed: true, attachment: null },
+            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', isFixed: true, attachment: null },
+            { id: 8, name: 'Heating costs', amount: 40, date: 'July', isFixed: true, attachment: null }
         ];
 
         let bills = [];
@@ -771,6 +725,9 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
+        // ============================================
+        // DATA LAYER
+        // ============================================
         async function loadFromGoogleSheets() {
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
@@ -783,7 +740,6 @@
                         name: rawData['Monthly rent - apartment'] || rawData['name'] || 'Unknown',
                         amount: parseFloat(rawData['1200']) || parseFloat(rawData['amount']) || 0,
                         date: rawData['August'] || rawData['date'] || 'Unknown',
-                        category: rawData['Stanovanje'] || rawData['category'] || 'Other',
                         isFixed: true,
                         attachment: null
                     };
@@ -816,6 +772,7 @@
                 });
                 return true;
             } catch (error) {
+                console.error('Save error:', error);
                 return false;
             }
         }
@@ -828,6 +785,7 @@
                 });
                 return true;
             } catch (error) {
+                console.error('Delete error:', error);
                 return false;
             }
         }
@@ -836,13 +794,15 @@
             return Date.now() + Math.random() * 1000;
         }
 
-        async function saveBill(name, amount, date, category, isFixed, attachment) {
+        // ============================================
+        // CRUD
+        // ============================================
+        async function saveBill(name, amount, date, isFixed, attachment) {
             const bill = {
                 id: generateId(),
                 name: name,
                 amount: parseFloat(amount),
                 date: date,
-                category: category,
                 isFixed: isFixed,
                 attachment: attachment || null,
                 attachmentName: attachment ? attachment.name : ''
@@ -891,14 +851,10 @@
         // ============================================
         function render() {
             const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
-            const category = document.getElementById('filterCategory')?.value || '';
-            const type = document.getElementById('filterType')?.value || '';
 
             let filtered = bills.filter(b => {
                 const matchName = (b.name || '').toLowerCase().includes(search);
-                const matchCat = category ? (b.category || '') === category : true;
-                const matchType = type ? (type === 'fixed' ? b.isFixed : !b.isFixed) : true;
-                return matchName && matchCat && matchType;
+                return matchName;
             });
 
             filtered.sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
@@ -907,25 +863,19 @@
             if (!tbody) return;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty">No bills found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found.</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
                     const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
                     
                     let attachmentHtml = '<span style="color:#94a3b8; font-size:12px;">None</span>';
                     if (hasAttachment) {
-                        // Za base64 attachment - otvara se direktno u novom tabu (radi!)
                         if (b.attachment.startsWith('data:')) {
                             attachmentHtml = `<a href="${b.attachment}" target="_blank" class="attachment-link">📎 View</a>`;
                         } else {
-                            // Google Drive link
                             attachmentHtml = `<a href="#" class="attachment-link preview-btn" data-url="${b.attachment}" data-name="${b.name}">📎 View</a>`;
                         }
                     }
-                    
-                    const categoryClass = b.category === 'Utilities' ? 'utilities' : 
-                                        b.category === 'Stanovanje' ? 'stanovanje' :
-                                        b.category === 'Internet/Phone' ? 'internet' : '';
                     
                     const deleteBtn = isAdmin() ?
                         `<button class="btn-danger-sm delete-btn" data-id="${b.id}">🗑️</button>` :
@@ -936,7 +886,6 @@
                             <td class="name">${escapeHtml(b.name || '')}</td>
                             <td class="amount">${(b.amount || 0).toFixed(2)} BAM</td>
                             <td>${escapeHtml(b.date || '')}</td>
-                            <td><span class="category-badge ${categoryClass}">${escapeHtml(b.category || 'Other')}</span></td>
                             <td>${attachmentHtml}</td>
                             <td><div class="actions-cell">${deleteBtn}</div></td>
                         </tr>
@@ -944,7 +893,6 @@
                 }).join('');
             }
 
-            // Preview buttons (samo za Google Drive linkove)
             document.querySelectorAll('.preview-btn').forEach(el => {
                 el.onclick = function(e) {
                     e.preventDefault();
@@ -995,7 +943,7 @@
         }
 
         // ============================================
-        // PREVIEW - ZA GOOGLE DRIVE LINKOVE
+        // PREVIEW
         // ============================================
         function showPreview(url, name) {
             const modal = document.getElementById('previewModal');
@@ -1092,7 +1040,6 @@
                 const name = document.getElementById('billName').value.trim();
                 const amount = parseFloat(document.getElementById('billAmount').value);
                 const date = document.getElementById('billDate').value.trim();
-                const category = document.getElementById('billCategory').value;
                 const isFixed = document.getElementById('isFixed').checked;
                 const fileInput = document.getElementById('billFile');
 
@@ -1110,11 +1057,11 @@
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         const attachment = { name: file.name, type: file.type, data: event.target.result };
-                        saveBill(name, amount, date, category, isFixed, attachment);
+                        saveBill(name, amount, date, isFixed, attachment);
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    saveBill(name, amount, date, category, isFixed, null);
+                    saveBill(name, amount, date, isFixed, null);
                 }
             });
 
@@ -1124,13 +1071,9 @@
             });
 
             document.getElementById('filterSearch').addEventListener('input', render);
-            document.getElementById('filterCategory').addEventListener('change', render);
-            document.getElementById('filterType').addEventListener('change', render);
 
             document.getElementById('clearFilters').addEventListener('click', function() {
                 document.getElementById('filterSearch').value = '';
-                document.getElementById('filterCategory').value = '';
-                document.getElementById('filterType').value = '';
                 render();
             });
 
