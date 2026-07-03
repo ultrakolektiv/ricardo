@@ -1,293 +1,123 @@
+@@ -1,653 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Bill Management</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f1f5f9;
-            padding: 16px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            color: #0f172a;
-        }
-        .container {
-            max-width: 1280px;
-            width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-            padding: 20px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .header-left { display: flex; align-items: center; gap: 10px; }
-        .header-left .icon { font-size: 24px; background: #f1f5f9; width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .header-left h1 { font-size: 18px; font-weight: 700; }
-        .header-left .subtitle { font-size: 12px; color: #94a3b8; display: block; }
-        .header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        
-        .badge { font-size: 11px; font-weight: 600; padding: 3px 12px; border-radius: 100px; background: #f1f5f9; color: #475569; }
-        .badge.admin { background: #fef3c7; color: #92400e; }
-        .badge.user { background: #dbeafe; color: #1e40af; }
-        
-        .btn {
-            padding: 6px 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .btn-primary { background: #0f172a; color: white; }
-        .btn-primary:hover { background: #1e293b; }
-        .btn-outline { background: transparent; color: #475569; border: 1px solid #e2e8f0; }
-        .btn-outline:hover { background: #f8fafc; }
-        .btn-danger { background: #fef2f2; color: #b91c1c; }
-        .btn-danger:hover { background: #fee2e2; }
-        .btn-sm { padding: 3px 10px; font-size: 11px; border-radius: 6px; }
-        .btn-danger-sm { background: #fef2f2; color: #b91c1c; padding: 3px 10px; font-size: 11px; border-radius: 6px; border: none; cursor: pointer; }
-        .btn-danger-sm:hover { background: #fee2e2; }
-        .btn-danger-sm:disabled { opacity: 0.3; cursor: not-allowed; }
-        
-        .login-overlay {
-            display: none !important;
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,0.6);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
-            z-index: 99999;
-            padding: 20px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #f0f4f8; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { max-width: 1200px; width: 100%; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+        h1 { color: #1a202c; margin-bottom: 8px; }
+        .subtitle { color: #718096; margin-bottom: 30px; }
+        .online-badge { background: #48bb78; color: white; padding: 2px 14px; border-radius: 20px; font-size: 13px; }
+
+        .login-overlay { display: none !important; position: fixed; inset: 0; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 99999; }
         .login-overlay.active { display: flex !important; }
-        .login-box {
-            background: white;
-            padding: 32px 24px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .login-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-        .login-box p { color: #64748b; margin-bottom: 20px; font-size: 13px; }
-        .login-box .form-group { margin-bottom: 14px; }
-        .login-box label { display: block; font-weight: 600; font-size: 12px; color: #334155; margin-bottom: 4px; }
-        .login-box input { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; background: #f8fafc; }
-        .login-box input:focus { outline: none; border-color: #0f172a; background: white; }
-        .login-box .btn { width: 100%; padding: 10px; justify-content: center; }
-        .login-error { color: #b91c1c; font-size: 12px; margin-top: 6px; display: none; background: #fef2f2; padding: 6px 12px; border-radius: 8px; border: 1px solid #fecaca; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .login-box h2 { margin-bottom: 8px; color: #1a202c; }
+        .login-box p { color: #718096; margin-bottom: 24px; font-size: 14px; }
+        .login-box .form-group { margin-bottom: 16px; }
+        .login-box label { display: block; font-weight: 600; font-size: 14px; color: #2d3748; margin-bottom: 4px; }
+        .login-box input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; }
+        .login-box input:focus { outline: none; border-color: #4299e1; }
+        .login-box .btn { width: 100%; padding: 12px; margin-top: 8px; background: #4299e1; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-box .btn:hover { background: #3182ce; }
+        .login-error { color: #fc8181; font-size: 14px; margin-top: 8px; display: none; background: #fff5f5; padding: 8px 12px; border-radius: 8px; border: 1px solid #fed7d7; }
         .login-error.show { display: block; }
-        
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: #0f172a;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 13px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            z-index: 99999;
-            display: none;
-            animation: slideUp 0.3s ease;
-            text-align: center;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        .toast.show { display: block; }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #f8fafc;
-            padding: 14px 16px;
-            border-radius: 12px;
-            border: 1px solid #f1f5f9;
-        }
-        .stat-card .label { font-size: 11px; color: #94a3b8; font-weight: 500; text-transform: uppercase; }
-        .stat-card .value { font-size: 22px; font-weight: 700; color: #0f172a; margin-top: 2px; }
-        .stat-card .value span { font-size: 14px; font-weight: 500; color: #94a3b8; margin-left: 2px; }
-        
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        .user-info { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .role-badge { padding: 4px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .role-badge.admin { background: #fefcbf; color: #975a16; }
+        .role-badge.user { background: #bee3f8; color: #2a69ac; }
+        .btn-logout { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; }
+        .btn-logout:hover { background: #f56565; }
+        .btn-admin-login { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #4299e1; color: white; }
+        .btn-admin-login:hover { background: #3182ce; }
+        .refresh-btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: #48bb78; color: white; }
+        .refresh-btn:hover { background: #38a169; }
+
         .admin-only { display: none !important; }
         .admin-only.visible { display: block !important; }
-        .form-section {
-            background: #f8fafc;
-            padding: 16px;
-            border-radius: 14px;
-            margin-bottom: 20px;
-            border: 1px solid #f1f5f9;
-        }
-        .form-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .form-group { display: flex; flex-direction: column; gap: 3px; }
+
+        .form-section { background: #f7fafc; padding: 24px; border-radius: 16px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
         .form-group.full-width { grid-column: 1 / -1; }
-        .form-group label { font-size: 12px; font-weight: 600; color: #334155; }
-        .form-group input {
-            padding: 8px 12px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 14px;
-            background: white;
-            width: 100%;
-        }
-        .form-group input:focus { outline: none; border-color: #0f172a; }
-        .form-group input[type="file"] { padding: 4px 0; border: none; background: transparent; }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
-        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0f172a; cursor: pointer; }
-        .checkbox-group label { font-weight: 500; font-size: 13px; color: #334155; cursor: pointer; }
-        .form-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-        
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .filter-bar input {
-            padding: 7px 12px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 13px;
-            background: white;
-            flex: 2 1 160px;
-            min-width: 140px;
-        }
-        .filter-bar input:focus { outline: none; border-color: #0f172a; }
-        .filter-bar .btn { flex-shrink: 0; }
-        
-        .table-wrapper {
-            border-radius: 12px;
-            border: 1px solid #f1f5f9;
-            overflow: hidden;
-            background: white;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead { background: #f8fafc; border-bottom: 1px solid #f1f5f9; }
-        th { padding: 10px 12px; text-align: left; font-weight: 600; font-size: 10px; text-transform: uppercase; color: #94a3b8; }
-        td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 13px; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafbfc; }
-        td .name { font-weight: 600; }
-        td .amount { font-weight: 600; }
-        .actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-        .attachment-link {
-            color: #0f172a;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 12px;
-            padding: 3px 10px;
-            border-radius: 6px;
-            background: #f1f5f9;
+        label { font-weight: 600; font-size: 14px; color: #2d3748; }
+        input, select { padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 10px; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #4299e1; }
+        input[type="file"] { padding: 8px 0; border: none; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+
+        .btn { padding: 12px 28px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #4299e1; color: white; }
+        .btn-primary:hover { background: #3182ce; }
+        .btn-danger { background: #fc8181; color: white; }
+        .btn-danger:hover { background: #f56565; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 8px; }
+        .btn-danger-big { padding: 8px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; background: #fc8181; color: white; }
+        .btn-danger-big:hover { background: #f56565; }
+        .preview-link { color: #4299e1; text-decoration: none; font-weight: 500; cursor: pointer; }
+        .preview-link:hover { text-decoration: underline; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #f7fafc; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #4299e1; }
+        .stat-card .label { font-size: 13px; color: #718096; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: #1a202c; }
+
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: #edf2f7; color: #2d3748; padding: 14px 16px; text-align: left; font-weight: 600; }
+        td { padding: 14px 16px; border-bottom: 1px solid #edf2f7; vertical-align: middle; }
+        tr:hover td { background: #f7fafc; }
+        .empty { text-align: center; padding: 40px 20px; color: #a0aec0; font-size: 18px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+        .filter-bar input, .filter-bar select { padding: 8px 14px; border-radius: 10px; border: 1px solid #cbd5e0; font-size: 14px; }
+
+        .sync-status { font-size: 13px; padding: 8px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .sync-status.synced { background: #f0fff4; color: #22543d; border: 1px solid #c6f6d5; }
+        .sync-status.syncing { background: #ebf8ff; color: #2a69ac; border: 1px solid #bee3f8; }
+        .sync-status.error { background: #fff5f5; color: #9b2c2c; border: 1px solid #fed7d7; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #48bb78; color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 600; z-index: 99999; animation: slideUp 0.3s ease; display: none; }
+        .toast.show { display: block; }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .monthly-total { background: #ebf8ff; border: 2px solid #4299e1; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .monthly-total .label { font-weight: 600; color: #2a69ac; font-size: 16px; }
+        .monthly-total .value { font-size: 28px; font-weight: 700; color: #2a69ac; }
+        .monthly-total .sub { font-size: 14px; color: #718096; }
+
+        /* Loading animation */
+        .loading-spinner {
             display: inline-block;
-            cursor: pointer;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e2e8f0;
+            border-radius: 50%;
+            border-top: 3px solid #4299e1;
+            animation: spin 1s linear infinite;
         }
-        .attachment-link:hover { background: #e2e8f0; }
-        .empty { text-align: center; padding: 32px 16px; color: #94a3b8; font-size: 14px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,0.6);
-            backdrop-filter: blur(4px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-        .modal-overlay.active { display: flex; }
-        .modal {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            max-width: 700px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-        .modal .close-btn {
-            float: right;
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            color: #94a3b8;
-            padding: 4px 8px;
-        }
-        .modal .close-btn:hover { color: #0f172a; }
-        .modal h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #0f172a;
-            padding-right: 30px;
-        }
-        .modal img { width: 100%; border-radius: 10px; max-height: 70vh; object-fit: contain; }
-        .modal iframe { width: 100%; height: 400px; border: none; border-radius: 10px; }
-        .modal .open-new-tab {
-            display: inline-block;
-            margin-top: 10px;
-            color: #0f172a;
-            font-weight: 500;
-            text-decoration: none;
-            padding: 6px 14px;
-            background: #f1f5f9;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        .modal .open-new-tab:hover { background: #e2e8f0; }
+        .status-emoji { font-size: 18px; }
         
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 14px; border-radius: 16px; }
-            .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .stat-card { padding: 10px 12px; }
-            .stat-card .value { font-size: 18px; }
-            .form-row { grid-template-columns: 1fr; gap: 10px; }
-            .form-section { padding: 12px; }
-            .filter-bar input { flex: 1 1 100%; min-width: 100px; }
-            th { padding: 8px 10px; font-size: 9px; }
-            td { padding: 8px 10px; font-size: 12px; }
-            .modal iframe { height: 250px; }
-        }
-        @media (max-width: 480px) {
-            .stats { grid-template-columns: 1fr; }
+        @media (max-width: 700px) {
+            .form-row { grid-template-columns: 1fr; }
+            .container { padding: 16px; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            td, th { padding: 10px 12px; font-size: 13px; }
             .header { flex-direction: column; align-items: stretch; }
-            .header-right { justify-content: flex-start; flex-wrap: wrap; }
-            .toast { left: 10px; right: 10px; font-size: 12px; padding: 10px 16px; }
+            .user-info { justify-content: center; flex-wrap: wrap; }
+            .toast { bottom: 10px; right: 10px; left: 10px; text-align: center; }
+            .monthly-total { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -309,84 +139,108 @@
                     <input type="password" id="password" placeholder="Enter password" required />
                 </div>
                 <div class="login-error" id="loginError">❌ Invalid username or password. Please try again.</div>
-                <button type="submit" class="btn btn-primary">🔑 Login as Admin</button>
+                <button type="submit" class="btn">🔑 Login as Admin</button>
             </form>
         </div>
     </div>
 
     <div class="container">
         <div class="header">
-            <div class="header-left">
-                <div class="icon">📋</div>
-                <div>
-                    <h1>Bill Management</h1>
-                    <span class="subtitle">All bills in Google Sheets &amp; Drive</span>
-                </div>
+            <div>
+                <h1>📋 Bill Management <span class="online-badge">☁️ Google Sheets</span></h1>
+                <p class="subtitle">All bills saved in Google Sheets &amp; Google Drive</p>
             </div>
-            <div class="header-right">
-                <span id="currentUserDisplay" style="font-weight:500; font-size:13px;">👤 User</span>
-                <span class="badge user" id="roleBadge">User</span>
-                <button class="btn btn-primary" id="adminLoginBtn">🔑 Login</button>
-                <button class="btn btn-outline" id="logoutBtn" style="display:none;">🚪 Logout</button>
-                <button class="btn btn-outline" id="refreshBtn">🔄</button>
+            <div class="user-info">
+                <span id="currentUserDisplay" style="font-weight:600;">👤 User (View Only)</span>
+                <span class="role-badge user" id="roleBadge">👤 User</span>
+                <button class="btn-admin-login" id="adminLoginBtn">🔑 Admin Login</button>
+                <button class="btn-logout" id="logoutBtn" style="display:none;">🚪 Logout</button>
+                <button class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
             </div>
         </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="label">Total Bills</div>
-                <div class="value" id="totalCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="label">Total Amount</div>
-                <div class="value" id="totalAmount">0.00 <span>BAM</span></div>
-            </div>
-            <div class="stat-card" style="background: #f8fafc; border: 1px dashed #d1d5db;">
-                <div class="label">Status</div>
-                <div class="value" style="font-size: 14px; font-weight: 500;" id="statusText">✅ Ready</div>
-            </div>
+        <div class="sync-status synced" id="syncStatus">
+            <span>⏳</span> <span id="syncText">Loading data...</span>
+        <div class="sync-status" id="syncStatus">
+            <span class="status-emoji">⏳</span> <span id="syncText">Loading data...</span>
+        </div>
+
+        <div class="monthly-total" id="monthlyTotal">
+            <span class="label">📆 Monthly Total</span>
+            <span><span class="value" id="monthlyTotalAmount">0.00</span> <span class="sub">BAM</span></span>
         </div>
 
         <div class="admin-only" id="adminFormContainer">
             <div class="form-section">
-                <h3>➕ Add New Bill</h3>
+                <h3 style="margin-bottom: 16px;">➕ Add New Bill</h3>
                 <form id="billForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="billName">Bill Name *</label>
-                            <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." required />
+                            <input type="text" id="billName" placeholder="e.g. Electricity, Internet..." />
                         </div>
                         <div class="form-group">
                             <label for="billAmount">Amount (BAM) *</label>
-                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" required />
+                            <input type="number" id="billAmount" placeholder="0.00" step="0.01" />
                         </div>
                         <div class="form-group">
                             <label for="billDate">Month *</label>
-                            <input type="text" id="billDate" placeholder="e.g. July, August..." required />
+                            <input type="text" id="billDate" placeholder="e.g. July, August..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="billCategory">Category</label>
+                            <select id="billCategory">
+                                <option value="Stanovanje">Stanovanje</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Internet/Phone">Internet/Phone</option>
+                                <option value="Subscriptions">Subscriptions</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                         <div class="form-group full-width">
                             <div class="checkbox-group">
                                 <input type="checkbox" id="isFixed" />
-                                <label for="isFixed">Fixed bill (no attachment required)</label>
+                                <label for="isFixed" style="font-weight: 500;">Fixed bill (no attachment required)</label>
                             </div>
                         </div>
                         <div class="form-group full-width" id="fileGroup">
                             <label for="billFile">Attach image or PDF (optional)</label>
                             <input type="file" id="billFile" accept=".pdf,image/*" />
-                            <small style="color:#94a3b8; font-size:11px;">Max: 5MB</small>
+                            <small style="color:#718096;">Max file size: 5MB</small>
                         </div>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Bill</button>
-                        <button type="button" class="btn btn-danger" id="deleteAllBtn">🗑️ Delete All</button>
-                    </div>
+                    <button type="submit" class="btn btn-primary">💾 Save Bill</button>
                 </form>
             </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
+                <span style="font-size:13px; color:#718096;">⚠️ This will permanently delete all bills from Google Sheets!</span>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer">
+            <div class="stat-card"><div class="label">Total Bills</div><div class="value" id="totalCount">0</div></div>
+            <div class="stat-card"><div class="label">Total Amount</div><div class="value" id="totalAmount">0.00 BAM</div></div>
+            <div class="stat-card"><div class="label">Fixed</div><div class="value" id="fixedCount">0</div></div>
+            <div class="stat-card"><div class="label">Variable</div><div class="value" id="variableCount">0</div></div>
         </div>
 
         <div class="filter-bar">
             <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
-            <button class="btn btn-outline btn-sm" id="clearFilters">Clear</button>
+            <select id="filterCategory">
+                <option value="">All categories</option>
+                <option value="Stanovanje">Stanovanje</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Internet/Phone">Internet/Phone</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Other">Other</option>
+            </select>
+            <select id="filterType">
+                <option value="">All types</option>
+                <option value="fixed">Fixed</option>
+                <option value="variable">Variable</option>
+            </select>
+            <button class="btn btn-sm btn-primary" id="clearFilters">🔄 Clear Filters</button>
         </div>
 
         <div class="table-wrapper">
@@ -396,22 +250,15 @@
                         <th>Name</th>
                         <th>Amount</th>
                         <th>Month</th>
+                        <th>Category</th>
                         <th>Attachment</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="billTableBody">
-                    <tr><td colspan="5" class="empty">Loading bills...</td></tr>
+                    <tr><td colspan="6" class="empty">Loading bills from Google Sheets...</td></tr>
                 </tbody>
             </table>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="previewModal">
-        <div class="modal">
-            <button class="close-btn" id="modalClose">&times;</button>
-            <h3 id="modalTitle">Attachment Preview</h3>
-            <div id="modalContent"></div>
         </div>
     </div>
 
@@ -422,24 +269,24 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwYp81Qf46nlmuXz--RioB0x1gyMfL66LL1pBpTaKYjiIpfo3YBs6HKqrvN0f6Ep-xuXA/exec';
 
         // ============================================
-        // DEMO PODACI (ako Google Sheets ne radi)
+        // DEMO PODACI - AKO GOOGLE SHEETS NE RADI
         // ============================================
         const DEMO_BILLS = [
-            { id: 1, name: 'Monthly rent - apartment', amount: 1200, date: 'August', isFixed: true, attachment: null },
-            { id: 2, name: 'Garage rent', amount: 100, date: 'July', isFixed: true, attachment: null },
-            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', isFixed: true, attachment: null },
-            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', isFixed: false, attachment: null },
-            { id: 5, name: 'Water bill', amount: 15, date: 'July', isFixed: false, attachment: null },
-            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', isFixed: true, attachment: null },
-            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', isFixed: true, attachment: null },
-            { id: 8, name: 'Heating costs', amount: 40, date: 'July', isFixed: true, attachment: null }
+            { id: 1, name: 'Monthly rent', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
+            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 5, name: 'Water bill', amount: 15, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
+            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', category: 'Utilities', isFixed: true, attachment: null },
+            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
+            { id: 8, name: 'Heating costs', amount: 40, date: 'July', category: 'Utilities', isFixed: true, attachment: null }
         ];
 
-        let bills = [];
-        let isAdminMode = false;
-        let isLoading = false;
-
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
         const ADMIN_CREDENTIALS = { username: 'admin', password: 'admin123' };
+        let isAdminMode = false;
 
         function loginAdmin(username, password) {
             if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
@@ -463,6 +310,9 @@
 
         function isAdmin() { return isAdminMode; }
 
+        // ============================================
+        // TOAST
+        // ============================================
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
@@ -471,172 +321,181 @@
         }
 
         // ============================================
-        // DATA LAYER - RADI SA GOOGLE SHEETS
+        // DATA LAYER
         // ============================================
+        let bills = [];
+
         async function loadFromGoogleSheets() {
-            if (isLoading) return;
-            isLoading = true;
-            
+            setSyncStatus('syncing', '⏳ Loading from Google Sheets...');
             try {
-                console.log('📡 Loading from Google Sheets...');
+                console.log('📡 Fetching from:', GOOGLE_SCRIPT_URL + '?method=GET');
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
                 const result = await response.json();
                 console.log('📦 Response:', result);
-                
+
+                if (result.success) {
                 if (result.success && result.data && result.data.length > 0) {
-                    const rawData = result.data;
-                    const formattedBills = rawData.map(row => {
-                        let name = row.name || row['Monthly rent - apartment'] || 'Unknown';
-                        let amount = parseFloat(row.amount || row['1200'] || 0);
-                        let date = row.date || row['August'] || 'Unknown';
-                        let isFixed = row.isFixed === true || row.isFixed === 'true' || false;
-                        let attachment = row.attachment || null;
-                        
-                        if (attachment && typeof attachment !== 'string') {
-                            attachment = null;
-                        }
-                        
-                        return {
-                            id: row.id || Date.now() + Math.random() * 1000,
-                            name: name,
-                            amount: amount,
-                            date: date,
-                            isFixed: isFixed,
-                            attachment: attachment
-                        };
-                    }).filter(b => b.amount > 0 && b.name !== 'Unknown');
-                    
-                    // DEDUPLICIRAJ - ukloni duplikate po name + amount + date
-                    const seen = new Set();
-                    const uniqueBills = formattedBills.filter(b => {
-                        const key = b.name + b.amount + b.date;
-                        if (seen.has(key)) return false;
-                        seen.add(key);
-                        return true;
+                    bills = result.data.filter(b => {
+                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
+                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
+                        const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
+                        return hasValidId && hasValidName && hasValidAmount;
                     });
-                    
-                    if (uniqueBills.length > 0) {
-                        bills = uniqueBills;
-                        document.getElementById('statusText').textContent = '✅ Synced (' + bills.length + ' bills)';
-                        render();
-                        updateStats();
-                        isLoading = false;
-                        return;
-                    }
+                    console.log('✅ Loaded:', bills.length, 'valid bills');
+                    console.log('✅ Loaded from Google Sheets:', bills.length, 'bills');
+                    setSyncStatus('synced', '✅ Connected - ' + bills.length + ' bills loaded');
+                } else {
+                    throw new Error(result.error || 'Failed to load');
+                    // If no data from Google Sheets, use DEMO data
+                    console.log('⚠️ No data from Google Sheets, using DEMO data');
+                    bills = DEMO_BILLS;
+                    setSyncStatus('synced', '📋 Using demo data - ' + bills.length + ' bills shown');
+                    showToast('📋 Using demo data (Google Sheets not connected)');
                 }
-                
-                bills = JSON.parse(JSON.stringify(DEMO_BILLS));
-                document.getElementById('statusText').textContent = '📋 Demo data';
-                render();
-                updateStats();
             } catch (error) {
+                console.error('❌ Error:', error);
+                setSyncStatus('error', '❌ Error: ' + error.message);
+                bills = [];
                 console.error('❌ Error loading from Google Sheets:', error);
-                bills = JSON.parse(JSON.stringify(DEMO_BILLS));
-                document.getElementById('statusText').textContent = '📋 Demo (offline)';
-                render();
-                updateStats();
+                // Use DEMO data as fallback
+                bills = DEMO_BILLS;
+                setSyncStatus('error', '⚠️ Using demo data (Google Sheets error)');
+                showToast('⚠️ Using demo data (Google Sheets error)');
             }
-            isLoading = false;
+            render();
+            updateStats();
+            updateMonthlyTotal();
         }
 
         async function saveToGoogleSheets(bill) {
+            setSyncStatus('syncing', '⏳ Saving...');
             try {
-                console.log('💾 Saving to Google Sheets:', bill);
-                // Koristi GET sa method=POST parametrom (umjesto POST metode)
-                const url = GOOGLE_SCRIPT_URL + '?method=POST';
-                await fetch(url, {
-                    method: 'GET',
+                await fetch(GOOGLE_SCRIPT_URL + '?method=POST', {
+                    method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bill)
                 });
-                console.log('✅ Save request sent');
+                setSyncStatus('synced', '✅ Saved!');
                 return true;
             } catch (error) {
                 console.error('❌ Save error:', error);
+                setSyncStatus('error', '❌ Save failed');
+                setSyncStatus('error', '❌ Save failed (saved locally)');
                 return false;
             }
         }
 
         async function deleteFromGoogleSheets(id) {
+            setSyncStatus('syncing', '⏳ Deleting...');
             try {
-                console.log('🗑️ Deleting from Google Sheets:', id);
-                // Koristi GET sa method=DELETE parametrom (umjesto DELETE metode)
-                const url = GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id;
-                await fetch(url, {
-                    method: 'GET',
+                await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
+                    method: 'DELETE',
                     mode: 'no-cors'
                 });
+                setSyncStatus('synced', '✅ Deleted!');
                 return true;
             } catch (error) {
                 console.error('❌ Delete error:', error);
+                setSyncStatus('error', '❌ Delete failed');
                 return false;
             }
         }
 
+        async function deleteAllBills() {
+            if (!isAdmin()) return;
+            if (!confirm('⚠️ Delete ALL bills?')) return;
+            if (!confirm('REALLY? ' + bills.length + ' bills will be deleted!')) return;
+
+            setSyncStatus('syncing', '⏳ Deleting all...');
+            for (const bill of bills) {
+                try {
+                    await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + bill.id, {
+                        method: 'DELETE',
+                        mode: 'no-cors'
+                    });
+                } catch (error) {
+                    console.error('Failed to delete:', bill.id);
+                }
+            }
+            // Remove all bills locally
+            bills = [];
+            showToast('🗑️ All bills deleted!');
+            await loadFromGoogleSheets();
+            render();
+            updateStats();
+            updateMonthlyTotal();
+            setSyncStatus('synced', '✅ All bills deleted');
+        }
+
+        function setSyncStatus(status, message) {
+            const el = document.getElementById('syncStatus');
+            const text = document.getElementById('syncText');
+            const emoji = document.querySelector('.status-emoji');
+            
+            el.className = 'sync-status ' + status;
+            text.textContent = message;
+            
+            if (status === 'synced') emoji.textContent = '✅';
+            else if (status === 'syncing') emoji.textContent = '⏳';
+            else if (status === 'error') emoji.textContent = '⚠️';
+        }
+
+        // ============================================
+        // CRUD
+        // ============================================
         function generateId() {
             return Date.now() + Math.random() * 1000;
         }
 
-        // ============================================
-        // CRUD - RADI SA GOOGLE SHEETS
-        // ============================================
-        async function saveBill(name, amount, date, isFixed, attachment) {
+        async function saveBill(name, amount, date, category, isFixed, attachment) {
             const bill = {
                 id: generateId(),
                 name: name,
                 amount: parseFloat(amount),
                 date: date,
+                category: category,
                 isFixed: isFixed,
                 attachment: attachment || null,
                 attachmentName: attachment ? attachment.name : ''
             };
-            
-            console.log('💾 Saving bill:', bill);
-            
+
+            // Add to local array immediately
             bills.unshift(bill);
+            
+            // Try to save to Google Sheets
+            await saveToGoogleSheets(bill);
+            await loadFromGoogleSheets();
+            
+            // Refresh display
             render();
             updateStats();
-            
-            await saveToGoogleSheets(bill);
-            
+            updateMonthlyTotal();
             showToast('✅ Bill "' + name + '" saved!');
-            
+
             document.getElementById('billForm').reset();
             document.getElementById('isFixed').checked = false;
             document.getElementById('fileGroup').style.display = 'block';
             document.getElementById('billFile').value = '';
             document.getElementById('billName').focus();
-            
-            setTimeout(() => loadFromGoogleSheets(), 500);
         }
 
         async function deleteBill(id) {
             if (!isAdmin()) return;
             if (!confirm('Delete this bill?')) return;
             
+            // Remove from local array
             bills = bills.filter(b => b.id !== id);
-            render();
-            updateStats();
             
+            // Try to delete from Google Sheets
             await deleteFromGoogleSheets(id);
-            showToast('🗑️ Bill deleted!');
-            setTimeout(() => loadFromGoogleSheets(), 500);
-        }
-
-        async function deleteAllBills() {
-            if (!isAdmin()) return;
-            if (!confirm('⚠️ Delete ALL bills?')) return;
-            if (!confirm('REALLY? All bills will be deleted!')) return;
-
-            for (const bill of bills) {
-                await deleteFromGoogleSheets(bill.id);
-            }
-            bills = [];
+            await loadFromGoogleSheets();
+            
+            // Refresh display
             render();
             updateStats();
-            showToast('🗑️ All bills deleted!');
-            setTimeout(() => loadFromGoogleSheets(), 500);
+            updateMonthlyTotal();
+            showToast('🗑️ Bill deleted!');
         }
 
         // ============================================
@@ -644,10 +503,14 @@
         // ============================================
         function render() {
             const search = document.getElementById('filterSearch')?.value?.toLowerCase() || '';
+            const category = document.getElementById('filterCategory')?.value || '';
+            const type = document.getElementById('filterType')?.value || '';
 
             let filtered = bills.filter(b => {
                 const matchName = (b.name || '').toLowerCase().includes(search);
-                return matchName;
+                const matchCat = category ? (b.category || '') === category : true;
+                const matchType = type ? (type === 'fixed' ? b.isFixed : !b.isFixed) : true;
+                return matchName && matchCat && matchType;
             });
 
             filtered.sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
@@ -656,54 +519,31 @@
             if (!tbody) return;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="empty">No bills found. Add your first bill!</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
-                    let hasAttachment = false;
-                    let attachmentValue = b.attachment;
-                    
-                    if (attachmentValue && typeof attachmentValue === 'string') {
-                        hasAttachment = attachmentValue !== '' && attachmentValue !== 'null' && attachmentValue !== 'undefined';
-                    } else if (attachmentValue && typeof attachmentValue === 'object') {
-                        hasAttachment = attachmentValue.data && attachmentValue.data !== '';
-                        if (hasAttachment) {
-                            attachmentValue = attachmentValue.data;
-                        }
-                    }
-                    
-                    let attachmentHtml = '<span style="color:#94a3b8; font-size:12px;">None</span>';
-                    if (hasAttachment && attachmentValue) {
-                        if (typeof attachmentValue === 'string' && attachmentValue.startsWith('data:')) {
-                            attachmentHtml = `<a href="${attachmentValue}" target="_blank" class="attachment-link">📎 View</a>`;
-                        } else if (typeof attachmentValue === 'string' && attachmentValue.includes('drive.google.com')) {
-                            attachmentHtml = `<a href="#" class="attachment-link preview-btn" data-url="${attachmentValue}" data-name="${b.name}">📎 View</a>`;
-                        } else if (typeof attachmentValue === 'string') {
-                            attachmentHtml = `<a href="${attachmentValue}" target="_blank" class="attachment-link">📎 View</a>`;
-                        }
-                    }
-                    
+                    const hasAttachment = b.attachment && b.attachment !== '' && b.attachment !== 'null' && b.attachment !== 'undefined';
+                    // Open attachment in new tab instead of iframe
+                    const attachmentHtml = hasAttachment ?
+                        `<a href="${b.attachment}" target="_blank" class="preview-link">📎 View</a>` :
+                        '<span style="color:#a0aec0;">None</span>';
+
                     const deleteBtn = isAdmin() ?
-                        `<button class="btn-danger-sm delete-btn" data-id="${b.id}">🗑️</button>` :
-                        `<button class="btn-danger-sm" disabled style="opacity:0.3; cursor:not-allowed;">🗑️</button>`;
-                    
+                        `<button class="btn btn-danger btn-sm delete-btn" data-id="${b.id}">🗑️</button>` :
+                        `<button class="btn btn-danger btn-sm" disabled style="opacity:0.4; cursor:not-allowed;">🗑️</button>`;
+
                     return `
                         <tr>
-                            <td class="name">${escapeHtml(b.name || '')}</td>
-                            <td class="amount">${(b.amount || 0).toFixed(2)} BAM</td>
+                            <td><strong>${escapeHtml(b.name || '')}</strong></td>
+                            <td>${(b.amount || 0).toFixed(2)} BAM</td>
                             <td>${escapeHtml(b.date || '')}</td>
+                            <td><span style="font-size:13px; color:#718096;">${escapeHtml(b.category || 'Other')}</span></td>
                             <td>${attachmentHtml}</td>
-                            <td><div class="actions-cell">${deleteBtn}</div></td>
+                            <td><div class="actions">${deleteBtn}</div></td>
                         </tr>
                     `;
                 }).join('');
             }
-
-            document.querySelectorAll('.preview-btn').forEach(el => {
-                el.onclick = function(e) {
-                    e.preventDefault();
-                    showPreview(this.dataset.url, this.dataset.name);
-                };
-            });
 
             document.querySelectorAll('.delete-btn').forEach(el => {
                 el.onclick = function() {
@@ -713,6 +553,9 @@
 
             updateStats();
             updateUI();
+            updateMonthlyTotal();
+            
+            console.log('📊 Rendered:', filtered.length, 'bills');
         }
 
         function escapeHtml(text) {
@@ -725,19 +568,31 @@
         function updateStats() {
             document.getElementById('totalCount').textContent = bills.length;
             const total = bills.reduce((sum, b) => sum + (b.amount || 0), 0);
-            document.getElementById('totalAmount').innerHTML = total.toFixed(2) + ' <span>BAM</span>';
+            document.getElementById('totalAmount').textContent = total.toFixed(2) + ' BAM';
+            const fixed = bills.filter(b => b.isFixed).length;
+            document.getElementById('fixedCount').textContent = fixed;
+            document.getElementById('variableCount').textContent = bills.length - fixed;
+        }
+
+        function updateMonthlyTotal() {
+            let total = 0;
+            const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+            bills.forEach(b => {
+                if (b.date && (b.date.includes(currentMonth) || b.date.includes(currentMonth.substring(0, 3)))) {
+                    total += (b.amount || 0);
+                }
+            });
+            document.getElementById('monthlyTotalAmount').textContent = total.toFixed(2);
         }
 
         function updateUI() {
             const isAdminUser = isAdmin();
-            
+
             document.getElementById('currentUserDisplay').textContent = isAdminUser ? '👑 Admin' : '👤 User';
-            const badge = document.getElementById('roleBadge');
-            badge.textContent = isAdminUser ? 'Admin' : 'User';
-            badge.className = `badge ${isAdminUser ? 'admin' : 'user'}`;
-            
-            document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-flex';
-            document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-flex' : 'none';
+            document.getElementById('roleBadge').textContent = isAdminUser ? '👑 Admin' : '👤 User';
+            document.getElementById('roleBadge').className = `role-badge ${isAdminUser ? 'admin' : 'user'}`;
+            document.getElementById('adminLoginBtn').style.display = isAdminUser ? 'none' : 'inline-block';
+            document.getElementById('logoutBtn').style.display = isAdminUser ? 'inline-block' : 'none';
 
             const adminForm = document.getElementById('adminFormContainer');
             if (isAdminUser) {
@@ -748,51 +603,20 @@
         }
 
         // ============================================
-        // PREVIEW
-        // ============================================
-        function showPreview(url, name) {
-            const modal = document.getElementById('previewModal');
-            const content = document.getElementById('modalContent');
-            document.getElementById('modalTitle').textContent = `Attachment: ${name || 'Bill'}`;
-
-            if (url && typeof url === 'string' && url.includes('drive.google.com')) {
-                const match = url.match(/[-\w]{25,}/);
-                if (match) {
-                    content.innerHTML = `
-                        <iframe src="https://drive.google.com/file/d/${match[0]}/preview" style="width:100%; height:400px;" allowfullscreen></iframe>
-                        <p style="margin-top:10px;">
-                            <a href="${url}" target="_blank" class="open-new-tab">📎 Open in Google Drive</a>
-                        </p>
-                    `;
-                } else {
-                    content.innerHTML = `<iframe src="${url}" style="width:100%; height:400px;"></iframe>`;
-                }
-            } else if (url && typeof url === 'string' && url.startsWith('data:')) {
-                if (url.startsWith('data:image/')) {
-                    content.innerHTML = `<img src="${url}" style="max-width:100%;" />`;
-                } else {
-                    content.innerHTML = `<iframe src="${url}" style="width:100%; height:400px;"></iframe>`;
-                }
-            } else {
-                content.innerHTML = `<p style="color:#94a3b8;">Unable to preview this file.</p>`;
-            }
-
-            modal.classList.add('active');
-        }
-
-        // ============================================
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            loadFromGoogleSheets();
+            console.log('🚀 App loaded');
 
             document.getElementById('refreshBtn').addEventListener('click', function() {
+                console.log('🔄 Manual refresh clicked');
                 loadFromGoogleSheets();
-                showToast('🔄 Refreshed!');
+                showToast('🔄 Refreshing data...');
             });
 
             document.getElementById('adminLoginBtn').addEventListener('click', function(e) {
                 e.preventDefault();
+                console.log('🔑 Admin login clicked');
                 document.getElementById('loginOverlay').classList.add('active');
                 document.getElementById('username').value = '';
                 document.getElementById('password').value = '';
@@ -804,7 +628,7 @@
                 e.preventDefault();
                 const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value.trim();
-                
+
                 if (loginAdmin(username, password)) {
                     document.getElementById('loginOverlay').classList.remove('active');
                     document.getElementById('loginError').classList.remove('show');
@@ -853,6 +677,7 @@
                 const name = document.getElementById('billName').value.trim();
                 const amount = parseFloat(document.getElementById('billAmount').value);
                 const date = document.getElementById('billDate').value.trim();
+                const category = document.getElementById('billCategory').value;
                 const isFixed = document.getElementById('isFixed').checked;
                 const fileInput = document.getElementById('billFile');
 
@@ -870,11 +695,11 @@
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         const attachment = { name: file.name, type: file.type, data: event.target.result };
-                        saveBill(name, amount, date, isFixed, attachment);
+                        saveBill(name, amount, date, category, isFixed, attachment);
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    saveBill(name, amount, date, isFixed, null);
+                    saveBill(name, amount, date, category, isFixed, null);
                 }
             });
 
@@ -884,24 +709,23 @@
             });
 
             document.getElementById('filterSearch').addEventListener('input', render);
+            document.getElementById('filterCategory').addEventListener('change', render);
+            document.getElementById('filterType').addEventListener('change', render);
 
             document.getElementById('clearFilters').addEventListener('click', function() {
                 document.getElementById('filterSearch').value = '';
+                document.getElementById('filterCategory').value = '';
+                document.getElementById('filterType').value = '';
                 render();
             });
 
-            document.getElementById('modalClose').addEventListener('click', function() {
-                document.getElementById('previewModal').classList.remove('active');
-            });
-
-            document.getElementById('previewModal').addEventListener('click', function(e) {
-                if (e.target === this) this.classList.remove('active');
-            });
-
             if (checkAdminSession()) {
+                console.log('👑 Admin session restored');
                 updateUI();
             }
+
+            // Load data
+            loadFromGoogleSheets();
         });
     </script>
 </body>
-</html>
