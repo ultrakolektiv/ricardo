@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>Bill Management</title>
     <style>
-        /* ===== RESET & BASE ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -24,8 +23,6 @@
             box-shadow: 0 2px 20px rgba(0,0,0,0.05);
             padding: 20px;
         }
-        
-        /* ===== HEADER ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -42,12 +39,10 @@
         .header-left .subtitle { font-size: 11px; color: #94a3b8; display: block; font-weight: 400; }
         .header-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         
-        /* ===== BADGE ===== */
         .badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: #f1f5f9; color: #475569; }
         .badge.admin { background: #fef3c7; color: #92400e; }
         .badge.user { background: #dbeafe; color: #1e40af; }
         
-        /* ===== BUTTONS ===== */
         .btn {
             padding: 6px 14px;
             border: none;
@@ -77,7 +72,6 @@
         .btn-danger-sm:disabled { opacity: 0.3; cursor: not-allowed; }
         .btn-danger-sm:active { transform: scale(0.92); }
         
-        /* ===== LOGIN OVERLAY ===== */
         .login-overlay {
             display: none !important;
             position: fixed;
@@ -119,7 +113,6 @@
         .login-error { color: #b91c1c; font-size: 12px; margin-top: 6px; display: none; background: #fef2f2; padding: 6px 12px; border-radius: 8px; border: 1px solid #fecaca; }
         .login-error.show { display: block; }
         
-        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -137,11 +130,9 @@
             animation: slideUp 0.3s ease;
             text-align: center;
             max-width: 90%;
-            white-space: nowrap;
         }
         .toast.show { display: block; }
         
-        /* ===== STATS ===== */
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -157,10 +148,7 @@
         .stat-card .label { font-size: 11px; color: #94a3b8; font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
         .stat-card .value { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-top: 2px; }
         .stat-card .value span { font-size: 14px; font-weight: 500; color: #94a3b8; margin-left: 2px; }
-        .stat-card.status { border-style: dashed; border-color: #d1d5db; background: #fafbfc; }
-        .stat-card.status .value { font-size: 14px; font-weight: 500; }
         
-        /* ===== ADMIN FORM ===== */
         .admin-only { display: none !important; }
         .admin-only.visible { display: block !important; }
         .form-section {
@@ -196,7 +184,6 @@
         .checkbox-group label { font-weight: 500; font-size: 13px; color: #334155; cursor: pointer; }
         .form-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         
-        /* ===== ADMIN TOOLBAR ===== */
         .admin-toolbar {
             display: none;
             gap: 10px;
@@ -215,7 +202,6 @@
             font-weight: 500;
         }
         
-        /* ===== FILTER ===== */
         .filter-bar {
             display: flex;
             gap: 8px;
@@ -237,7 +223,6 @@
         .filter-bar input:focus { outline: none; border-color: #1a1a2e; box-shadow: 0 0 0 3px rgba(26,26,46,0.08); }
         .filter-bar .btn { flex-shrink: 0; }
         
-        /* ===== TABLE ===== */
         .table-wrapper {
             border-radius: 14px;
             border: 1px solid #f1f5f9;
@@ -269,7 +254,6 @@
         .actions-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .empty { text-align: center; padding: 32px 16px; color: #94a3b8; font-size: 14px; }
         
-        /* ===== ATTACHMENT LINK ===== */
         .attachment-link {
             display: inline-block;
             padding: 3px 12px;
@@ -285,7 +269,6 @@
         .attachment-link:hover { background: #e0e7ff; }
         .attachment-link:active { transform: scale(0.95); }
         
-        /* ===== SYNC STATUS ===== */
         .sync-status {
             font-size: 12px;
             padding: 6px 14px;
@@ -301,7 +284,6 @@
         .sync-status.syncing { background: #eff6ff; border-color: #dbeafe; color: #1e40af; }
         .sync-status.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
         
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
             body { padding: 8px; }
             .container { padding: 14px; border-radius: 16px; }
@@ -323,7 +305,7 @@
             .attachment-link { font-size: 11px; padding: 2px 10px; }
             .btn-danger-sm { font-size: 10px; padding: 2px 8px; }
             .actions-cell { gap: 4px; }
-            .toast { font-size: 12px; padding: 8px 16px; white-space: normal; max-width: 95%; }
+            .toast { font-size: 12px; padding: 8px 16px; max-width: 95%; }
             .login-box { padding: 24px 16px; }
             .admin-toolbar { padding: 10px 12px; flex-direction: column; align-items: stretch; }
             .btn-danger-big { width: 100%; justify-content: center; }
@@ -333,7 +315,6 @@
             .stats { grid-template-columns: 1fr; }
             .header { flex-direction: column; align-items: stretch; gap: 6px; }
             .header-right { justify-content: flex-start; flex-wrap: wrap; }
-            .header-right .btn { font-size: 10px; padding: 4px 8px; }
         }
         
         @media (hover: none) {
@@ -351,10 +332,8 @@
 </head>
 <body>
 
-    <!-- ===== TOAST ===== -->
     <div class="toast" id="toast">✅ Bill saved successfully!</div>
 
-    <!-- ===== LOGIN OVERLAY ===== -->
     <div class="login-overlay" id="loginOverlay">
         <div class="login-box">
             <h2>🔐 Admin Login</h2>
@@ -374,9 +353,7 @@
         </div>
     </div>
 
-    <!-- ===== MAIN APP ===== -->
     <div class="container">
-        <!-- HEADER -->
         <div class="header">
             <div class="header-left">
                 <div class="icon">📋</div>
@@ -394,13 +371,11 @@
             </div>
         </div>
 
-        <!-- SYNC STATUS -->
         <div class="sync-status" id="syncStatus">
             <span id="syncEmoji">⏳</span>
             <span id="syncText">Loading data...</span>
         </div>
 
-        <!-- STATS -->
         <div class="stats">
             <div class="stat-card">
                 <div class="label">Total Bills</div>
@@ -412,13 +387,11 @@
             </div>
         </div>
 
-        <!-- ADMIN TOOLBAR - Delete All -->
         <div class="admin-toolbar" id="adminToolbar">
             <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills &amp; Files</button>
             <span class="warning">⚠️ This will permanently delete ALL bills from Google Sheets AND all attached files from Google Drive!</span>
         </div>
 
-        <!-- ADMIN FORM -->
         <div class="admin-only" id="adminFormContainer">
             <div class="form-section">
                 <h3>➕ Add New Bill</h3>
@@ -465,13 +438,11 @@
             </div>
         </div>
 
-        <!-- FILTER -->
         <div class="filter-bar">
             <input type="text" id="filterSearch" placeholder="🔍 Search by name..." />
             <button class="btn btn-outline btn-sm" id="clearFilters">Clear</button>
         </div>
 
-        <!-- TABLE -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -492,23 +463,9 @@
 
     <script>
         // ============================================
-        // 🔑 VAŠ GOOGLE SCRIPT URL
+        // 🔑 VAŠ GOOGLE SCRIPT URL - ZAMIJENITE!
         // ============================================
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD308vTIy7GrRCGYIDFpTYtWaOOkL8hQD_oNX-V0Db06lszUFZD9XfmmJxf76SQE3_gw/exec';
-
-        // ============================================
-        // DEMO PODACI
-        // ============================================
-        const DEMO_BILLS = [
-            { id: 1, name: 'Monthly rent', amount: 1200, date: 'August', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 2, name: 'Garage rent', amount: 100, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 3, name: 'Internet bill', amount: 60.7, date: 'July', category: 'Internet/Phone', isFixed: true, attachment: null },
-            { id: 4, name: 'Electricity bill', amount: 50, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
-            { id: 5, name: 'Water bill', amount: 15, date: 'July', category: 'Utilities', isFixed: false, attachment: null },
-            { id: 6, name: 'Garbage bill', amount: 7, date: 'July', category: 'Utilities', isFixed: true, attachment: null },
-            { id: 7, name: 'Maintenance fee', amount: 18.1, date: 'July', category: 'Stanovanje', isFixed: true, attachment: null },
-            { id: 8, name: 'Heating costs', amount: 40, date: 'July', category: 'Utilities', isFixed: true, attachment: null }
-        ];
 
         let bills = [];
         let isAdminMode = false;
@@ -553,6 +510,7 @@
             try {
                 const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
                 const result = await response.json();
+                console.log('📦 Loaded data:', result);
                 
                 if (result.success && result.data && result.data.length > 0) {
                     bills = result.data.filter(b => {
@@ -561,14 +519,16 @@
                         const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
                         return hasValidId && hasValidName && hasValidAmount;
                     });
+                    console.log('✅ Loaded:', bills.length, 'bills');
                     setSyncStatus('synced', '✅ ' + bills.length + ' bills loaded');
                 } else {
-                    bills = DEMO_BILLS;
-                    setSyncStatus('synced', '📋 Demo data - ' + bills.length + ' bills');
+                    bills = [];
+                    setSyncStatus('synced', '✅ 0 bills loaded');
                 }
             } catch (error) {
-                bills = DEMO_BILLS;
-                setSyncStatus('error', '⚠️ Offline - demo data');
+                console.error('❌ Error loading:', error);
+                bills = [];
+                setSyncStatus('error', '⚠️ Error loading data');
             }
             render();
             updateStats();
@@ -576,6 +536,7 @@
 
         async function saveToGoogleSheets(bill) {
             try {
+                console.log('💾 Saving bill:', bill);
                 await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -584,38 +545,92 @@
                 });
                 return true;
             } catch (error) {
-                console.error('Save error:', error);
+                console.error('❌ Save error:', error);
                 return false;
             }
         }
 
         async function deleteFromGoogleSheets(id) {
             try {
+                console.log('🗑️ Deleting bill:', id);
                 await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
                     method: 'GET',
                     mode: 'no-cors'
                 });
                 return true;
             } catch (error) {
-                console.error('Delete error:', error);
+                console.error('❌ Delete error:', error);
                 return false;
             }
         }
 
+        function generateId() {
+            return Date.now() + Math.random() * 1000;
+        }
+
         // ============================================
-        // DELETE ALL - BRIŠE SVE IZ SHEET-A I DRIVE-A
+        // CRUD
         // ============================================
+        async function saveBill(name, amount, date, category, isFixed, attachment) {
+            const bill = {
+                id: generateId(),
+                name: name,
+                amount: parseFloat(amount),
+                date: date,
+                category: category,
+                isFixed: isFixed,
+                attachment: attachment || null,
+                attachmentName: attachment ? attachment.name : ''
+            };
+            
+            console.log('📝 Saving bill with attachment:', attachment ? 'YES' : 'NO');
+            
+            // Dodaj u lokalnu listu
+            bills.unshift(bill);
+            render();
+            updateStats();
+            
+            // Sačuvaj u Google Sheets
+            await saveToGoogleSheets(bill);
+            showToast('✅ "' + name + '" saved!');
+            
+            document.getElementById('billForm').reset();
+            document.getElementById('isFixed').checked = false;
+            document.getElementById('fileGroup').style.display = 'block';
+            document.getElementById('billFile').value = '';
+            document.getElementById('billName').focus();
+            
+            // Ponovo učitaj podatke
+            setTimeout(() => loadFromGoogleSheets(), 1000);
+        }
+
+        async function deleteBill(id) {
+            if (!isAdmin()) return;
+            if (!confirm('Delete this bill?')) return;
+            
+            console.log('🗑️ Deleting bill ID:', id);
+            
+            // Ukloni iz lokalne liste
+            bills = bills.filter(b => b.id !== id);
+            render();
+            updateStats();
+            
+            // Obriši iz Google Sheets
+            await deleteFromGoogleSheets(id);
+            showToast('🗑️ Deleted!');
+            
+            // Ponovo učitaj podatke
+            setTimeout(() => loadFromGoogleSheets(), 1000);
+        }
+
         async function deleteAllBills() {
             if (!isAdmin()) return;
             
-            // Prva potvrda
-            if (!confirm('⚠️ WARNING: This will DELETE ALL bills from Google Sheets AND ALL attached files from Google Drive!\n\nThis action CANNOT be undone!\n\nAre you sure you want to continue?')) return;
-            
-            // Druga potvrda
+            if (!confirm('⚠️ WARNING: This will DELETE ALL bills from Google Sheets AND all attached files from Google Drive!\n\nThis action CANNOT be undone!\n\nAre you sure you want to continue?')) return;
             if (!confirm('⚠️ FINAL WARNING: ' + bills.length + ' bills will be permanently deleted.\n\nAll attached images and PDFs will also be removed from Google Drive.\n\nAre you ABSOLUTELY sure?')) return;
 
             setSyncStatus('syncing', '⏳ Deleting all bills and files...');
-            showToast('⏳ Deleting all bills and files...');
+            showToast('⏳ Deleting all...');
             
             let deleted = 0;
             let failed = 0;
@@ -634,51 +649,9 @@
             render();
             updateStats();
             setSyncStatus('synced', '✅ Deleted ' + deleted + ' bills' + (failed > 0 ? ' (' + failed + ' failed)' : ''));
-            showToast('🗑️ Deleted ' + deleted + ' bills and files!' + (failed > 0 ? ' (' + failed + ' failed)' : ''));
+            showToast('🗑️ Deleted ' + deleted + ' bills and files!');
             
-            // Ponovo učitaj podatke
             setTimeout(() => loadFromGoogleSheets(), 1000);
-        }
-
-        function generateId() {
-            return Date.now() + Math.random() * 1000;
-        }
-
-        async function saveBill(name, amount, date, category, isFixed, attachment) {
-            const bill = {
-                id: generateId(),
-                name: name,
-                amount: parseFloat(amount),
-                date: date,
-                category: category,
-                isFixed: isFixed,
-                attachment: attachment || null,
-                attachmentName: attachment ? attachment.name : ''
-            };
-            
-            bills.unshift(bill);
-            render();
-            updateStats();
-            await saveToGoogleSheets(bill);
-            showToast('✅ "' + name + '" saved!');
-            
-            document.getElementById('billForm').reset();
-            document.getElementById('isFixed').checked = false;
-            document.getElementById('fileGroup').style.display = 'block';
-            document.getElementById('billFile').value = '';
-            document.getElementById('billName').focus();
-            setTimeout(() => loadFromGoogleSheets(), 800);
-        }
-
-        async function deleteBill(id) {
-            if (!isAdmin()) return;
-            if (!confirm('Delete this bill?')) return;
-            bills = bills.filter(b => b.id !== id);
-            render();
-            updateStats();
-            await deleteFromGoogleSheets(id);
-            showToast('🗑️ Deleted!');
-            setTimeout(() => loadFromGoogleSheets(), 800);
         }
 
         function setSyncStatus(status, message) {
@@ -712,13 +685,16 @@
                 tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found.</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
+                    // Provjera attachmenta
                     let hasAttachment = false;
-                    let attachmentValue = b.attachment;
+                    let attachmentValue = null;
                     
-                    if (attachmentValue && typeof attachmentValue === 'string') {
+                    if (b.attachment && typeof b.attachment === 'string') {
+                        attachmentValue = b.attachment;
                         hasAttachment = attachmentValue !== '' && attachmentValue !== 'null' && attachmentValue !== 'undefined';
                     }
                     
+                    // Ako attachment postoji, prikaži link
                     let attachmentHtml = '<span style="color:#94a3b8; font-size:11px;">None</span>';
                     if (hasAttachment && attachmentValue) {
                         attachmentHtml = `<a href="${attachmentValue}" target="_blank" class="attachment-link">📎 View</a>`;
@@ -790,6 +766,7 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 App loaded');
             loadFromGoogleSheets();
 
             document.getElementById('refreshBtn').addEventListener('click', function() {
@@ -847,7 +824,6 @@
                 showToast('👋 Logged out');
             });
 
-            // ===== DELETE ALL - NOVO =====
             document.getElementById('deleteAllBtn').addEventListener('click', deleteAllBills);
 
             document.getElementById('billForm').addEventListener('submit', function(e) {
