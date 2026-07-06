@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>Bill Management</title>
+    <title>Bill Management - TEST</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -359,7 +359,7 @@
                 <div class="icon">📋</div>
                 <div>
                     <h1>Bill Management</h1>
-                    <span class="subtitle">Google Sheets &amp; Drive</span>
+                    <span class="subtitle">Local Storage (TEST)</span>
                 </div>
             </div>
             <div class="header-right">
@@ -371,9 +371,9 @@
             </div>
         </div>
 
-        <div class="sync-status" id="syncStatus">
-            <span id="syncEmoji">⏳</span>
-            <span id="syncText">Loading data...</span>
+        <div class="sync-status synced" id="syncStatus">
+            <span>✅</span>
+            <span id="syncText">Local storage mode</span>
         </div>
 
         <div class="stats">
@@ -388,8 +388,8 @@
         </div>
 
         <div class="admin-toolbar" id="adminToolbar">
-            <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills &amp; Files</button>
-            <span class="warning">⚠️ This will permanently delete ALL bills from Google Sheets AND all attached files from Google Drive!</span>
+            <button class="btn-danger-big" id="deleteAllBtn">🗑️ Delete All Bills</button>
+            <span class="warning">⚠️ This will permanently delete ALL bills from local storage!</span>
         </div>
 
         <div class="admin-only" id="adminFormContainer">
@@ -455,7 +455,7 @@
                     </tr>
                 </thead>
                 <tbody id="billTableBody">
-                    <tr><td colspan="5" class="empty">Loading bills...</td></tr>
+                    <tr><td colspan="5" class="empty">No bills. Add your first bill!</td></tr>
                 </tbody>
             </table>
         </div>
@@ -463,10 +463,8 @@
 
     <script>
         // ============================================
-        // 🔑 VAŠ GOOGLE SCRIPT URL - ZAMIJENITE!
+        // LOCAL STORAGE - BEZ GOOGLE SHEETS
         // ============================================
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyD308vTIy7GrRCGYIDFpTYtWaOOkL8hQD_oNX-V0Db06lszUFZD9XfmmJxf76SQE3_gw/exec';
-
         let bills = [];
         let isAdminMode = false;
 
@@ -503,64 +501,32 @@
         }
 
         // ============================================
-        // DATA LAYER
+        // LOCAL STORAGE FUNKCIJE
         // ============================================
-        async function loadFromGoogleSheets() {
-            setSyncStatus('syncing', '⏳ Loading...');
+        function loadBills() {
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL + '?method=GET');
-                const result = await response.json();
-                console.log('📦 Loaded data:', result);
-                
-                if (result.success && result.data && result.data.length > 0) {
-                    bills = result.data.filter(b => {
-                        const hasValidId = b.id && b.id !== '' && b.id !== 'null' && b.id !== 'undefined';
-                        const hasValidName = b.name && b.name.trim() !== '' && b.name !== 'null' && b.name !== 'undefined';
-                        const hasValidAmount = b.amount && parseFloat(b.amount) > 0;
-                        return hasValidId && hasValidName && hasValidAmount;
-                    });
-                    console.log('✅ Loaded:', bills.length, 'bills');
-                    setSyncStatus('synced', '✅ ' + bills.length + ' bills loaded');
+                const stored = localStorage.getItem('my_bills');
+                if (stored) {
+                    bills = JSON.parse(stored);
+                    console.log('📦 Loaded from storage:', bills.length, 'bills');
                 } else {
                     bills = [];
-                    setSyncStatus('synced', '✅ 0 bills loaded');
+                    console.log('📦 No bills in storage');
                 }
             } catch (error) {
                 console.error('❌ Error loading:', error);
                 bills = [];
-                setSyncStatus('error', '⚠️ Error loading data');
             }
             render();
             updateStats();
         }
 
-        async function saveToGoogleSheets(bill) {
+        function saveBills() {
             try {
-                console.log('💾 Saving bill:', bill);
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bill)
-                });
-                return true;
+                localStorage.setItem('my_bills', JSON.stringify(bills));
+                console.log('💾 Saved to storage:', bills.length, 'bills');
             } catch (error) {
-                console.error('❌ Save error:', error);
-                return false;
-            }
-        }
-
-        async function deleteFromGoogleSheets(id) {
-            try {
-                console.log('🗑️ Deleting bill:', id);
-                await fetch(GOOGLE_SCRIPT_URL + '?method=DELETE&id=' + id, {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-                return true;
-            } catch (error) {
-                console.error('❌ Delete error:', error);
-                return false;
+                console.error('❌ Error saving:', error);
             }
         }
 
@@ -571,7 +537,7 @@
         // ============================================
         // CRUD
         // ============================================
-        async function saveBill(name, amount, date, category, isFixed, attachment) {
+        function saveBill(name, amount, date, category, isFixed, attachment) {
             const bill = {
                 id: generateId(),
                 name: name,
@@ -583,15 +549,13 @@
                 attachmentName: attachment ? attachment.name : ''
             };
             
-            console.log('📝 Saving bill with attachment:', attachment ? 'YES' : 'NO');
+            console.log('📝 Saving bill:', bill);
+            console.log('📎 Attachment:', attachment ? 'YES - ' + attachment.name : 'NO');
             
-            // Dodaj u lokalnu listu
             bills.unshift(bill);
+            saveBills();
             render();
             updateStats();
-            
-            // Sačuvaj u Google Sheets
-            await saveToGoogleSheets(bill);
             showToast('✅ "' + name + '" saved!');
             
             document.getElementById('billForm').reset();
@@ -599,70 +563,30 @@
             document.getElementById('fileGroup').style.display = 'block';
             document.getElementById('billFile').value = '';
             document.getElementById('billName').focus();
-            
-            // Ponovo učitaj podatke
-            setTimeout(() => loadFromGoogleSheets(), 1000);
         }
 
-        async function deleteBill(id) {
+        function deleteBill(id) {
             if (!isAdmin()) return;
             if (!confirm('Delete this bill?')) return;
             
             console.log('🗑️ Deleting bill ID:', id);
-            
-            // Ukloni iz lokalne liste
             bills = bills.filter(b => b.id !== id);
+            saveBills();
             render();
             updateStats();
-            
-            // Obriši iz Google Sheets
-            await deleteFromGoogleSheets(id);
             showToast('🗑️ Deleted!');
-            
-            // Ponovo učitaj podatke
-            setTimeout(() => loadFromGoogleSheets(), 1000);
         }
 
-        async function deleteAllBills() {
+        function deleteAllBills() {
             if (!isAdmin()) return;
-            
-            if (!confirm('⚠️ WARNING: This will DELETE ALL bills from Google Sheets AND all attached files from Google Drive!\n\nThis action CANNOT be undone!\n\nAre you sure you want to continue?')) return;
-            if (!confirm('⚠️ FINAL WARNING: ' + bills.length + ' bills will be permanently deleted.\n\nAll attached images and PDFs will also be removed from Google Drive.\n\nAre you ABSOLUTELY sure?')) return;
-
-            setSyncStatus('syncing', '⏳ Deleting all bills and files...');
-            showToast('⏳ Deleting all...');
-            
-            let deleted = 0;
-            let failed = 0;
-
-            for (const bill of bills) {
-                try {
-                    await deleteFromGoogleSheets(bill.id);
-                    deleted++;
-                } catch (error) {
-                    console.error('Failed to delete:', bill.id, error);
-                    failed++;
-                }
-            }
+            if (!confirm('⚠️ Delete ALL bills?')) return;
+            if (!confirm('REALLY? ' + bills.length + ' bills will be deleted!')) return;
 
             bills = [];
+            saveBills();
             render();
             updateStats();
-            setSyncStatus('synced', '✅ Deleted ' + deleted + ' bills' + (failed > 0 ? ' (' + failed + ' failed)' : ''));
-            showToast('🗑️ Deleted ' + deleted + ' bills and files!');
-            
-            setTimeout(() => loadFromGoogleSheets(), 1000);
-        }
-
-        function setSyncStatus(status, message) {
-            const el = document.getElementById('syncStatus');
-            const emoji = document.getElementById('syncEmoji');
-            const text = document.getElementById('syncText');
-            el.className = 'sync-status ' + status;
-            text.textContent = message;
-            if (status === 'synced') emoji.textContent = '✅';
-            else if (status === 'syncing') emoji.textContent = '⏳';
-            else if (status === 'error') emoji.textContent = '⚠️';
+            showToast('🗑️ All bills deleted!');
         }
 
         // ============================================
@@ -682,10 +606,9 @@
             if (!tbody) return;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty">No bills found. Add your first bill!</td></tr>`;
             } else {
                 tbody.innerHTML = filtered.map(b => {
-                    // Provjera attachmenta
                     let hasAttachment = false;
                     let attachmentValue = null;
                     
@@ -694,7 +617,6 @@
                         hasAttachment = attachmentValue !== '' && attachmentValue !== 'null' && attachmentValue !== 'undefined';
                     }
                     
-                    // Ako attachment postoji, prikaži link
                     let attachmentHtml = '<span style="color:#94a3b8; font-size:11px;">None</span>';
                     if (hasAttachment && attachmentValue) {
                         attachmentHtml = `<a href="${attachmentValue}" target="_blank" class="attachment-link">📎 View</a>`;
@@ -766,11 +688,11 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 App loaded');
-            loadFromGoogleSheets();
+            console.log('🚀 App loaded (LOCAL STORAGE MODE)');
+            loadBills();
 
             document.getElementById('refreshBtn').addEventListener('click', function() {
-                loadFromGoogleSheets();
+                loadBills();
                 showToast('🔄 Refreshed!');
             });
 
